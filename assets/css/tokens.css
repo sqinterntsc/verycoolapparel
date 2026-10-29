@@ -1,0 +1,15 @@
+:root {
+  --color-paper: #f7f7f2;
+  --color-surface: #eeeee7;
+  --color-image: #eeeae3;
+  --color-ink: #20251e;
+  --color-muted: #686c63;
+  --color-line: #d7d9cf;
+  --color-accent: #d9e83b;
+  --color-dark: #20271e;
+  --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --page-gutter: clamp(20px, 4vw, 64px);
+  --space-section: clamp(64px, 7vw, 112px);
+  --transition: 180ms ease;
+}

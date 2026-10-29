@@ -1,0 +1,71 @@
+# Verycoolapparel
+
+A premium outdoor apparel storefront built with **vanilla HTML, CSS, and JavaScript**. No framework, packages, build step, or application backend.
+
+## Run locally
+
+From this folder:
+
+```sh
+python3 -m http.server 8000
+```
+
+Open **http://localhost:8000**. The collection is at **http://localhost:8000/products/**.
+
+Use a local HTTP server instead of double-clicking the HTML files: browsers restrict ES module imports on `file://` URLs. This command only serves static files; it does not implement an application backend.
+
+## Structure
+
+```text
+index.html                       Landing page and main entry point
+products/index.html              Collection, filters, search, and sorting
+assets/
+  css/
+    main.css                     CSS entry point
+    tokens.css                   Colors, typography, spacing
+    base.css                     Reset, accessibility, shared primitives
+    layout.css                   Navigation and footer
+    components.css               Cards, buttons, product dialog, bag drawer
+    pages.css                    Landing and collection page layouts
+  images/                        Five local launch assets
+  js/
+    app.js                       Shared initialization
+    data/products.js             Collection data, prices, sizes, asset paths
+    components/product-card.js   Shared product card renderer
+    features/cart-store.js       Cart state, validation, localStorage
+    features/cart-ui.js          Bag drawer and quantity controls
+    features/product-dialog.js  Product details and size selection
+    pages/catalog.js             Category filtering, search, sorting
+    utils/currency.js            USD formatting
+docs/assets/                     Image provenance and editable product sources
+```
+
+## Make changes
+
+- **Head snippets:** edit the clearly marked `<head>` in `index.html`. Add any shared snippets to `products/index.html` too. The HTML is delivered directly to the browser.
+- **Products:** edit `assets/js/data/products.js`. Add product images to `assets/images/`. Product names, descriptions, prices, sizes, and specifications are centralized.
+- **Visual style:** edit `assets/css/tokens.css` for the palette and spacing. Component styles and page layouts have separate files.
+- **New pages:** create a folder with an `index.html` and use the existing relative CSS/module paths. Shared header/footer HTML is intentionally explicit in each page.
+- **Future React migration:** product data, cart state, formatting, and filtering are separate from DOM rendering. Replace the view modules while adapting the state/data modules.
+
+## Shopping behavior
+
+- Open a product to view its details and choose a size before adding it to your bag.
+- Each product/size combination is a separate bag item. Increase or decrease quantities and remove items.
+- The header count and subtotal update immediately. Bags persist in `localStorage` and synchronize across tabs on the same origin. Storage restrictions fall back to an in-memory bag.
+- The collection supports category filters, category links, text search, and price sorting.
+- Native `<dialog>` elements support modal focus, Escape to close, and focus return. Mobile navigation and reduced-motion preferences are supported.
+
+## Assets and concept limitations
+
+The launch uses four original, locally rendered garment illustrations and one reusable alpine photograph. The available AI image-generation service failed to issue an access token, so these are **not presented as AI-generated product photographs**. See `docs/assets/` for provenance, source artwork, and replacement prompts.
+
+All garments, specifications, and USD prices are concept content. The shell is an original technical design; no third-party textile licensing or certification is claimed. There is no inventory service, checkout integration, payment collection, or order submission. The bag's demo checkout explicitly explains this and creates no order.
+
+For production, replace concept specifications with verified product information, supply final brand assets, and connect checkout and inventory to your chosen commerce service.
+
+## Verification
+
+Cart and catalog logic were exercised in macOS JavaScriptCore: separate size variants, quantity changes, removal, subtotals, duplicate cart records, malformed storage, unavailable storage, category filtering, case-insensitive search, and both price sort directions passed. JavaScript bodies were checked for syntax, and static HTTP checks verified page links, module imports, stylesheet imports, and JavaScript MIME types.
+
+Interactive browser verification could not run in this environment: macOS denied Chrome's process launch, and the remote browser launcher was unavailable. Desktop and mobile browser interaction should be checked when opening the local site.
