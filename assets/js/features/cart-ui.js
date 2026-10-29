@@ -32,7 +32,7 @@ function cartItemMarkup(item) {
   row.dataset.productId = product.id;
   row.dataset.size = size;
   row.innerHTML = `
-    <img class="cart-item__image" src="${product.image}" alt="${product.imageAlt}">
+    <div class="cart-item__media"><img class="cart-item__image" src="${product.image}" alt="${product.imageAlt}"></div>
     <div class="cart-item__details">
       <h3 class="cart-item__title"></h3>
       <p class="cart-item__variant"></p>

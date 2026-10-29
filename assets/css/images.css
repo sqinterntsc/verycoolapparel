@@ -1,0 +1,16 @@
+/* Persistent framing is separate from hover transforms and reduced-motion rules. */
+:root { --base-image-zoom: 1.45; }
+:is(.product-card__image, .product-dialog__image, .cart-item__image, .product-gallery__thumbnail-image)[src$="/base-v3.webp"],
+.grid > figure > a > img[src$="/base-v3.webp"] {
+  object-fit: cover;
+  scale: var(--base-image-zoom);
+  transform-origin: center;
+}
+
+/* Keep enlarged images inside their existing frames. */
+.cart-item__media { width: 110px; height: 142px; overflow: hidden; background: var(--color-image); }
+.product-gallery__thumbnail-media { flex: 0 0 44px; width: 44px; height: 44px; overflow: hidden; }
+.grid > figure > a:has(> img[src$="/base-v3.webp"]) { display: block; overflow: hidden; }
+@media (max-width: 420px) {
+  .cart-item__media { width: 95px; height: 130px; }
+}

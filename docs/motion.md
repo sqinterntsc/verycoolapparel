@@ -41,6 +41,13 @@ visibility changes also complete immediately.
 Tune durations and easing with the `--motion-*` and `--ease-*` properties at the
 top of `motion.css`. Keep the reduced-motion override last.
 
+V3 product image framing is in `assets/css/images.css`. `--base-image-zoom: 1.45`
+makes the garment 45% larger in cards, quick shop, cart thumbnails, gallery
+thumbnails, and the standalone image gallery. CSS `scale` provides the static
+crop independently of the hover `transform`, so reduced-motion and touch rules
+preserve the framing. Thumbnail wrappers clip the enlargement to the original
+frame dimensions. Original image files and full-image downloads are preserved.
+
 Run lifecycle regressions with `node tests/motion.test.cjs`. Browser verification
 should cover desktop/mobile entry and exit, Escape/backdrop dismissal, focus
 return, rapid reopen, toast dismissal, and reduced-motion settings.

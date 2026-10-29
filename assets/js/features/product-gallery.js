@@ -80,7 +80,9 @@ export function initProductGallery(root) {
       thumbnail.width = 52;
       thumbnail.height = 52;
       thumbnail.loading = 'lazy';
-      button.append(thumbnail, element('span', 'product-gallery__thumbnail-label', entry.label || `View ${imageIndex + 1}`));
+      const media = element('span', 'product-gallery__thumbnail-media');
+      media.append(thumbnail);
+      button.append(media, element('span', 'product-gallery__thumbnail-label', entry.label || `View ${imageIndex + 1}`));
       button.addEventListener('click', () => showImage(imageIndex));
       fragment.append(button);
     });
