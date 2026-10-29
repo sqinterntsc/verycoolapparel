@@ -9,7 +9,9 @@ Each product has its own directory so additional views can be added without mixi
 ```text
 products/
   <product-slug>/
-    base.webp          Primary storefront image
+    base.webp          Preserved original studio image
+    base-v2.webp       Preserved outdoor scenery version
+    base-v3.webp       Primary storefront image; empty CGI backdrop with elements only
     alternate-01.webp  Suggested future alternate view
     detail-01.webp     Suggested future detail view
     lifestyle-01.webp  On-body rain/snow detail; second modal slide
@@ -18,7 +20,7 @@ editorial/
   alpine-landscape.webp
 ```
 
-Keep `base.webp` as the primary catalog image. Number additional images with two digits so they sort predictably.
+Keep `base.webp` and `base-v2.webp` unchanged. The storefront now uses `base-v3.webp`: a floating garment against an empty neutral studio backdrop with isolated weather/light effects, no outdoor scenery, and crop-safe breathing room. See `base-v3-notes.md` for the current direction and `base-v2-notes.md` for the preserved earlier version. Number additional images with two digits so they sort predictably.
 
 ## Retry and diagnosis — October 29, 2026
 

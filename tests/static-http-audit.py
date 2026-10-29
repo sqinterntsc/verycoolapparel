@@ -57,7 +57,7 @@ try:
         for module in re.findall(r"@import\s*['\"]([^'\"]+)['\"]", body.decode()):
             fetch(urljoin(origin + relative, module))
     for slug in ('traverse-short', 'contour-merino', 'altitude-fleece', 'strata-shell'):
-        for view in ('base.webp', 'lifestyle-01.webp'):
+        for view in ('base.webp', 'base-v2.webp', 'base-v3.webp', 'lifestyle-01.webp', 'lifestyle-02.webp'):
             _, kind = fetch(f'{origin}/assets/images/photorealistic/products/{slug}/{view}')
             # Some Python platform MIME databases omit WebP; browsers decode the verified bytes.
             assert kind.startswith('image/') or kind == 'application/octet-stream', kind
