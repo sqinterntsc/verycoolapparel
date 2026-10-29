@@ -3,6 +3,7 @@ import { renderProductCards } from './components/product-card.js';
 import { initCartUI } from './features/cart-ui.js';
 import { initProductDialog } from './features/product-dialog.js';
 import { initCatalog } from './pages/catalog.js';
+import { createDisclosure } from './utils/motion.js';
 
 function getDialogRoot() {
   let root = document.querySelector('[data-dialog-root]');
@@ -21,17 +22,15 @@ function initToast() {
   toast.setAttribute('role', 'status');
   toast.setAttribute('aria-live', 'polite');
   toast.setAttribute('aria-atomic', 'true');
-  toast.hidden = true;
+  const motion = createDisclosure(toast, 'is-visible');
   let timer = null;
 
   return (message) => {
     window.clearTimeout(timer);
     toast.textContent = message;
-    toast.hidden = false;
-    toast.classList.add('is-visible');
+    motion.setOpen(true);
     timer = window.setTimeout(() => {
-      toast.classList.remove('is-visible');
-      toast.hidden = true;
+      motion.setOpen(false);
     }, 3200);
   };
 }
@@ -41,23 +40,31 @@ function initMobileMenu() {
     const menuId = button.getAttribute('aria-controls');
     const menu = menuId ? document.getElementById(menuId) : null;
     if (!menu) return;
+    const motion = createDisclosure(menu);
+    const desktop = window.matchMedia('(min-width: 761px)');
 
     function setOpen(open) {
       button.setAttribute('aria-expanded', String(open));
-      menu.hidden = !open;
-      menu.classList.toggle('is-open', open);
+      button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      motion.setOpen(open);
     }
 
     setOpen(false);
-    button.addEventListener('click', () => setOpen(menu.hidden));
+    button.addEventListener('click', () => setOpen(!motion.isOpen));
     menu.addEventListener('click', (event) => {
       if (event.target.closest('a')) setOpen(false);
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !menu.hidden) {
+      if (event.key === 'Escape' && motion.isOpen) {
         setOpen(false);
         button.focus();
       }
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (motion.isOpen && !menu.contains(event.target) && !button.contains(event.target)) setOpen(false);
+    });
+    desktop.addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
     });
   });
 }

@@ -1,4 +1,5 @@
 import { addItem } from './cart-store.js';
+import { createDialogMotion } from '../utils/motion.js';
 import { formatCurrency } from '../utils/currency.js';
 
 function element(tag, className, text = '') {
@@ -48,7 +49,7 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
 
   let activeProduct = null;
   let selectedSize = null;
-  let returnFocus = null;
+  const motion = createDialogMotion(dialog, closeButton);
 
   function selectSize(size, selectedButton) {
     selectedSize = size;
@@ -97,27 +98,17 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
 
   function open(product, trigger = document.activeElement) {
     if (!product) return;
-    if (dialog.open) dialog.close();
     populate(product);
-    returnFocus = trigger instanceof HTMLElement ? trigger : null;
-    dialog.showModal();
-    closeButton.focus();
+    motion.open(trigger);
   }
 
   function close() {
-    if (dialog.open) dialog.close();
+    motion.close();
   }
 
   closeButton.addEventListener('click', close);
-  dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) close();
-  });
-  dialog.addEventListener('close', () => {
-    const focusTarget = returnFocus;
-    returnFocus = null;
-    if (focusTarget?.isConnected) focusTarget.focus();
-  });
   addButton.addEventListener('click', () => {
+    if (motion.closing) return;
     if (!activeProduct || !selectedSize) {
       validation.hidden = false;
       sizes.querySelector('button')?.focus();

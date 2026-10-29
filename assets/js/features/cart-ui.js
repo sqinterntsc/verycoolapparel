@@ -8,6 +8,7 @@ import {
   subscribe,
 } from './cart-store.js';
 import { formatCurrency } from '../utils/currency.js';
+import { createDialogMotion } from '../utils/motion.js';
 
 const catalogUrl = new URL('../../../products/', import.meta.url).href;
 
@@ -104,7 +105,7 @@ export function initCartUI({ root } = {}) {
   const checkout = dialog.querySelector('.cart-drawer__checkout');
   const message = dialog.querySelector('.cart-drawer__message');
   const announcer = dialog.querySelector('.cart-drawer__announcer');
-  let returnFocus = null;
+  const motion = createDialogMotion(dialog, closeButton);
   let previousCount = null;
 
   function captureListFocus() {
@@ -169,27 +170,17 @@ export function initCartUI({ root } = {}) {
 
   function open(trigger = document.activeElement) {
     render();
-    returnFocus = trigger instanceof HTMLElement ? trigger : null;
-    if (!dialog.open) dialog.showModal();
-    closeButton.focus();
+    motion.open(trigger);
   }
 
   function close() {
-    if (dialog.open) dialog.close();
+    motion.close();
   }
 
   document.querySelectorAll('[data-cart-open]').forEach((button) => {
     button.addEventListener('click', () => open(button));
   });
   closeButton.addEventListener('click', close);
-  dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) close();
-  });
-  dialog.addEventListener('close', () => {
-    const focusTarget = returnFocus;
-    returnFocus = null;
-    if (focusTarget?.isConnected) focusTarget.focus();
-  });
   list.addEventListener('click', (event) => {
     const button = event.target.closest('[data-cart-action]');
     const row = button?.closest('.cart-item');
