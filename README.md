@@ -27,7 +27,10 @@ assets/
     layout.css                   Navigation and footer
     components.css               Cards, buttons, product dialog, bag drawer
     pages.css                    Landing and collection page layouts
-  images/                        Five local launch assets
+  images/                        Preserved illustration assets
+    photorealistic/
+      products/<product>/       Product-specific image sets; base.webp is primary
+      editorial/                Campaign and landscape imagery
   js/
     app.js                       Shared initialization
     data/products.js             Collection data, prices, sizes, asset paths
@@ -50,7 +53,7 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Shopping behavior
 
-- Open a product to view its details and choose a size before adding it to your bag.
+- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a two-image gallery: floating Studio photograph and an on-body rain/snow close-up. Navigate with arrows, thumbnails, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to Studio; switching views preserves the selected size.
 - Each product/size combination is a separate bag item. Increase or decrease quantities and remove items.
 - The header count and subtotal update immediately. Bags persist in `localStorage` and synchronize across tabs on the same origin. Storage restrictions fall back to an in-memory bag.
 - The collection supports category filters, category links, text search, and price sorting.
@@ -58,13 +61,15 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Assets and concept limitations
 
-The launch uses four original, locally rendered garment illustrations and one reusable alpine photograph. The available AI image-generation service failed to issue an access token, so these are **not presented as AI-generated product photographs**. See `docs/assets/` for provenance, source artwork, and replacement prompts.
+The live storefront uses four AI-generated photorealistic garment concepts and one campaign landscape. Product images live in product-specific directories under `assets/images/photorealistic/products/`; `base.webp` is the primary storefront image. The earlier locally rendered illustrations remain preserved directly under `assets/images/`. See `assets/images/photorealistic/` and `docs/assets/` for provenance, art direction, prompts, and source artwork.
 
 All garments, specifications, and USD prices are concept content. The shell is an original technical design; no third-party textile licensing or certification is claimed. There is no inventory service, checkout integration, payment collection, or order submission. The bag's demo checkout explicitly explains this and creates no order.
 
 For production, replace concept specifications with verified product information, supply final brand assets, and connect checkout and inventory to your chosen commerce service.
 
 ## Verification
+
+The two-image product galleries have 12 dependency-free DOM-event regression checks in `tests/product-gallery.test.cjs` covering arrows, wraparound, thumbnails, keyboard navigation, swipe direction/cancellation, recoverable image errors, modal reset, single-image fallback, selected-size preservation, add-to-bag callbacks and focus return. Run with Node: `node tests/product-gallery.test.cjs`. These are controller checks with a DOM double, not interactive browser layout verification. Four new weather images decode correctly at 1408 × 1760; each gallery's two actual file paths were verified.
 
 Cart and catalog logic were exercised in macOS JavaScriptCore: separate size variants, quantity changes, removal, subtotals, duplicate cart records, malformed storage, unavailable storage, category filtering, case-insensitive search, and both price sort directions passed. JavaScript bodies were checked for syntax, and static HTTP checks verified page links, module imports, stylesheet imports, and JavaScript MIME types.
 

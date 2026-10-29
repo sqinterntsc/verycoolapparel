@@ -1,6 +1,15 @@
-const imageUrl = (filename) => new URL(`../../images/${filename}`, import.meta.url).href;
+const productImageUrl = (productId, filename = 'base.webp') => (
+  new URL(`../../images/photorealistic/products/${productId}/${filename}`, import.meta.url).href
+);
 
 const sharedSizes = Object.freeze(['XS', 'S', 'M', 'L', 'XL']);
+
+const weatherViews = Object.freeze({
+  'traverse-short': 'Close-up of an adult trekker wearing charcoal Traverse shorts while stepping over wet granite in heavy rain',
+  'contour-merino': 'Oblique close-up of an adult trekker wearing the stone Contour Merino base layer in wind-driven snow',
+  'altitude-fleece': 'Low-angle close-up of an adult trekker wearing the moss Altitude Grid Fleece in alpine snowfall',
+  'strata-shell': 'Low-angle close-up of an adult trekker wearing the sulphur Strata shell hood in torrential rain',
+});
 
 export const products = Object.freeze([
   {
@@ -10,7 +19,7 @@ export const products = Object.freeze([
     category: 'bottoms',
     categoryLabel: 'Bottoms',
     color: 'Charcoal',
-    image: imageUrl('traverse-short.webp'),
+    image: productImageUrl('traverse-short'),
     imageAlt: 'Traverse Short in Charcoal',
     description: 'A relaxed trail short shaped for everyday movement and warm-weather miles.',
     sizes: sharedSizes,
@@ -27,7 +36,7 @@ export const products = Object.freeze([
     category: 'base-layers',
     categoryLabel: 'Base layers',
     color: 'Stone',
-    image: imageUrl('contour-merino.webp'),
+    image: productImageUrl('contour-merino'),
     imageAlt: 'Contour Merino LS base layer in Stone',
     description: 'A close-fitting merino crew long sleeve designed for easy warmth and daily wear.',
     sizes: sharedSizes,
@@ -44,7 +53,7 @@ export const products = Object.freeze([
     category: 'mid-layers',
     categoryLabel: 'Mid layers',
     color: 'Moss',
-    image: imageUrl('altitude-fleece.webp'),
+    image: productImageUrl('altitude-fleece'),
     imageAlt: 'Altitude Grid Fleece mid layer in Moss',
     description: 'A softly structured quarter-zip grid fleece for cool starts and everyday layering.',
     sizes: sharedSizes,
@@ -61,7 +70,7 @@ export const products = Object.freeze([
     category: 'shells',
     categoryLabel: 'Shells',
     color: 'Sulphur',
-    image: imageUrl('strata-shell.webp'),
+    image: productImageUrl('strata-shell'),
     imageAlt: 'Strata 3L Shell jacket in Sulphur',
     description: 'A hooded three-layer shell concept with a clean profile and room for shifting conditions.',
     sizes: sharedSizes,
@@ -71,7 +80,24 @@ export const products = Object.freeze([
       { label: 'Color', value: 'Sulphur' },
     ],
   },
-].map((product, featuredIndex) => Object.freeze({ ...product, featuredIndex })));
+].map((product, featuredIndex) => Object.freeze({
+  ...product,
+  featuredIndex,
+  images: Object.freeze([
+    Object.freeze({
+      src: product.image,
+      alt: `${product.name} in ${product.color}, floating studio product photograph`,
+      label: 'Studio',
+      fit: 'contain',
+    }),
+    Object.freeze({
+      src: productImageUrl(product.id, 'lifestyle-01.webp'),
+      alt: weatherViews[product.id],
+      label: 'In the elements',
+      fit: 'cover',
+    }),
+  ]),
+})));
 
 export const productById = new Map(products.map((product) => [product.id, product]));
 export const productCategories = Object.freeze([

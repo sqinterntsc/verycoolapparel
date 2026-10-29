@@ -1,6 +1,7 @@
 import { addItem } from './cart-store.js';
 import { createDialogMotion } from '../utils/motion.js';
 import { formatCurrency } from '../utils/currency.js';
+import { initProductGallery } from './product-gallery.js';
 
 function element(tag, className, text = '') {
   const node = document.createElement(tag);
@@ -18,7 +19,7 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
     <div class="product-dialog__surface">
       <button class="product-dialog__close" type="button" aria-label="Close quick shop">Close</button>
       <div class="product-dialog__layout">
-        <div class="product-dialog__media"><img class="product-dialog__image" alt=""></div>
+        <div class="product-dialog__media"></div>
         <div class="product-dialog__details">
           <p class="product-dialog__eyebrow"></p>
           <h2 class="product-dialog__title" id="product-dialog-title"></h2>
@@ -37,7 +38,7 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
   root.append(dialog);
 
   const closeButton = dialog.querySelector('.product-dialog__close');
-  const image = dialog.querySelector('.product-dialog__image');
+  const gallery = initProductGallery(dialog.querySelector('.product-dialog__media'));
   const eyebrow = dialog.querySelector('.product-dialog__eyebrow');
   const title = dialog.querySelector('.product-dialog__title');
   const price = dialog.querySelector('.product-dialog__price');
@@ -65,8 +66,7 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
   function populate(product) {
     activeProduct = product;
     selectedSize = null;
-    image.src = product.image;
-    image.alt = product.imageAlt;
+    gallery.setProduct(product);
     eyebrow.textContent = `${product.categoryLabel} · ${product.color}`;
     title.textContent = product.name;
     price.textContent = formatCurrency(product.price);
