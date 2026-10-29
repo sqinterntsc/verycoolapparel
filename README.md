@@ -53,7 +53,7 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Shopping behavior
 
-- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a two-image gallery: floating Studio photograph and an on-body rain/snow close-up. Navigate with arrows, thumbnails, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to Studio; switching views preserves the selected size.
+- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a three-image gallery: floating Studio photograph, an on-body rain/snow close-up, and an extreme-angle Off axis view. Navigate with arrows, thumbnails, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to Studio; switching views preserves the selected size.
 - Each product/size combination is a separate bag item. Increase or decrease quantities and remove items.
 - The header count and subtotal update immediately. Bags persist in `localStorage` and synchronize across tabs on the same origin. Storage restrictions fall back to an in-memory bag.
 - The collection supports category filters, category links, text search, and price sorting.
@@ -69,7 +69,7 @@ For production, replace concept specifications with verified product information
 
 ## Verification
 
-The two-image product galleries have 12 dependency-free DOM-event regression checks in `tests/product-gallery.test.cjs` covering arrows, wraparound, thumbnails, keyboard navigation, swipe direction/cancellation, recoverable image errors, modal reset, single-image fallback, selected-size preservation, add-to-bag callbacks and focus return. Run with Node: `node tests/product-gallery.test.cjs`. These are controller checks with a DOM double, not interactive browser layout verification. Four new weather images decode correctly at 1408 × 1760; each gallery's two actual file paths were verified.
+The product galleries have 13 dependency-free DOM-event regression checks in `tests/product-gallery.test.cjs` covering arrows, wraparound, thumbnails, keyboard navigation, swipe direction/cancellation, recoverable image errors, modal reset, single-image fallback, selected-size preservation, add-to-bag callbacks and focus return. Run with Node: `node tests/product-gallery.test.cjs`. These are controller checks with a DOM double, not interactive browser layout verification. Four weather images and four extreme-angle images decode correctly at 1408 × 1760; each gallery's three actual file paths were verified.
 
 Cart and catalog logic were exercised in macOS JavaScriptCore: separate size variants, quantity changes, removal, subtotals, duplicate cart records, malformed storage, unavailable storage, category filtering, case-insensitive search, and both price sort directions passed. JavaScript bodies were checked for syntax, and static HTTP checks verified page links, module imports, stylesheet imports, and JavaScript MIME types.
 

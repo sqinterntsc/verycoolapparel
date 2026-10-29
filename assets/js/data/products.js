@@ -6,9 +6,16 @@ const sharedSizes = Object.freeze(['XS', 'S', 'M', 'L', 'XL']);
 
 const weatherViews = Object.freeze({
   'traverse-short': 'Close-up of an adult trekker wearing charcoal Traverse shorts while stepping over wet granite in heavy rain',
-  'contour-merino': 'Oblique close-up of an adult trekker wearing the stone Contour Merino base layer in wind-driven snow',
+  'contour-merino': 'Face-free close-up of an adult adjusting the dry stone merino sleeve cuff while preparing inside an alpine hut',
   'altitude-fleece': 'Low-angle close-up of an adult trekker wearing the moss Altitude Grid Fleece in alpine snowfall',
   'strata-shell': 'Low-angle close-up of an adult trekker wearing the sulphur Strata shell hood in torrential rain',
+});
+
+const angleViews = Object.freeze({
+  'traverse-short': 'Extreme worm’s-eye view of an adult trekker wearing charcoal Traverse shorts over opaque leggings in rain',
+  'contour-merino': 'Face-free close-up of the dry stone merino worn beneath an open sulphur shell while adjusting layers under a sheltered hut porch',
+  'altitude-fleece': 'Low upward long-lens close-up of moss quarter-zip fleece with snow-covered shoulders and wind-driven blizzard flakes, face cropped out',
+  'strata-shell': 'Face-free low side-on long-lens close-up of the sulphur shell shoulder, bent elbow and chest zipper in heavy rain',
 });
 
 export const products = Object.freeze([
@@ -93,7 +100,13 @@ export const products = Object.freeze([
     Object.freeze({
       src: productImageUrl(product.id, 'lifestyle-01.webp'),
       alt: weatherViews[product.id],
-      label: 'In the elements',
+      label: product.id === 'contour-merino' ? 'Before the trail' : 'In the elements',
+      fit: 'cover',
+    }),
+    Object.freeze({
+      src: productImageUrl(product.id, 'lifestyle-02.webp'),
+      alt: angleViews[product.id],
+      label: product.id === 'contour-merino' ? 'Layered protection' : 'Off axis',
       fit: 'cover',
     }),
   ]),

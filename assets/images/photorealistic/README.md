@@ -13,6 +13,7 @@ products/
     alternate-01.webp  Suggested future alternate view
     detail-01.webp     Suggested future detail view
     lifestyle-01.webp  On-body rain/snow detail; second modal slide
+    lifestyle-02.webp  Extreme-angle on-body image; third modal slide
 editorial/
   alpine-landscape.webp
 ```

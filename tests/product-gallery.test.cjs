@@ -15,7 +15,9 @@ class Element {
       const values = new Set(this.className.split(' ').filter(Boolean));
       if (on) values.add(name); else values.delete(name);
       this.className = [...values].join(' ');
-    }, contains: (name) => this.className.split(' ').includes(name) };
+    }, contains: (name) => this.className.split(' ').includes(name),
+    add: (name) => this.classList.toggle(name, true),
+    remove: (name) => this.classList.toggle(name, false) };
   }
   set textContent(value) { this._text = value; this.children = []; }
   get textContent() { return this._text; }
@@ -52,13 +54,15 @@ class Element {
     for (const handler of this.events[name] || []) handler(event);
     return event;
   }
+  contains(node) { return this === node || this.children.some((child) => child.contains(node)); }
   focus() { document.activeElement = this; }
   setPointerCapture(id) { this.capturedPointerId = id; }
   showModal() { this.open = true; }
   close() { this.open = false; this.emit('close'); }
 }
 const document = { createElement: (tag) => new Element(tag),
-  createDocumentFragment: () => new Element('fragment'), activeElement: null };
+  createDocumentFragment: () => new Element('fragment'), activeElement: null,
+  querySelector: () => null };
 const added = []; const callbacks = [];
 const context = vm.createContext({ document, HTMLElement: Element, console,
   addItem: (id, size) => added.push({ id, size }), formatCurrency: (price) => `$${price}` });
@@ -67,6 +71,8 @@ function load(relative) {
   source = source.replace(/^import .*;\n/gm, '').replace(/\bexport /g, '');
   vm.runInContext(source, context, { filename: relative });
 }
+// Exercise the real motion helper's no-active-animation path in this DOM double.
+load('assets/js/utils/motion.js');
 load('assets/js/features/product-gallery.js');
 load('assets/js/features/product-dialog.js');
 const api = vm.runInContext('({getProductImages,wrapImageIndex,initProductGallery,initProductDialog})', context);
@@ -155,6 +161,32 @@ check('reopening and switching products reset studio view and size', () => {
   controller.open(product('contour-merino'), trigger);
   assert.equal(image.src, 'contour-merino-base.webp'); assert.equal(status.textContent, 'Studio · 1 / 2');
   assert.equal(add.disabled, true); assert.equal(sizes.querySelectorAll('button')[0].getAttribute('aria-pressed'), 'false');
+});
+check('three-image navigation reaches the new angle, wraps and resets on reopening', () => {
+  const triple = product('traverse-short');
+  triple.images.push({ src: 'traverse-short-angle.webp', alt: 'Extreme bottom-up view', label: 'Off axis', fit: 'cover' });
+  controller.open(triple, trigger);
+  assert.equal(thumbRoot.querySelectorAll('button').length, 3);
+  assert.equal(status.textContent, 'Studio · 1 / 3');
+  next.emit('click'); next.emit('click');
+  assert.equal(image.src, 'traverse-short-angle.webp');
+  assert.equal(image.alt, 'Extreme bottom-up view');
+  assert.equal(status.textContent, 'Off axis · 3 / 3');
+  assert.equal(thumbRoot.querySelectorAll('button')[2].getAttribute('aria-pressed'), 'true');
+  next.emit('click'); assert.equal(image.src, 'traverse-short-base.webp');
+  previous.emit('click'); assert.equal(image.src, 'traverse-short-angle.webp');
+  thumbRoot.querySelectorAll('button')[1].emit('click');
+  gallery.emit('keydown', { key: 'ArrowRight' });
+  assert.equal(image.src, 'traverse-short-angle.webp');
+  pointer('pointerdown', 200, 100); pointer('pointerup', 80, 100);
+  assert.equal(image.src, 'traverse-short-base.webp');
+  sizes.querySelectorAll('button')[0].emit('click');
+  thumbRoot.querySelectorAll('button')[2].emit('click');
+  assert.equal(add.disabled, false);
+  controller.close(); controller.open(triple, trigger);
+  assert.equal(image.src, 'traverse-short-base.webp');
+  assert.equal(status.textContent, 'Studio · 1 / 3');
+  assert.equal(add.disabled, true);
 });
 check('single-image product hides extra controls and ignores arrows', () => {
   const single = product('legacy'); delete single.images;
