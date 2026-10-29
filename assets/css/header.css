@@ -1,0 +1,94 @@
+/* Sticky without scripting; the shared controller enhances it to a floating bar. */
+.site-header { position: sticky; top: 0; z-index: 40; }
+
+/* Reserve the full header height so compacting never shifts the page content. */
+.site-nav {
+  --nav-slot-height: 86px;
+  --nav-bar-height: 86px;
+  --nav-offset: 0px;
+  --nav-width: 100%;
+  --nav-inset: clamp(12px, 3vw, 48px);
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 40;
+  height: var(--nav-slot-height);
+  pointer-events: none;
+}
+.site-nav .site-header {
+  position: relative;
+  top: auto;
+  z-index: auto;
+  width: var(--nav-width);
+  min-height: var(--nav-bar-height);
+  height: var(--nav-bar-height);
+  margin-inline: auto;
+  border: 1px solid transparent;
+  border-bottom-color: var(--color-line);
+  border-radius: 0;
+  transform: translateY(var(--nav-offset));
+  pointer-events: auto;
+  transition: width 440ms var(--ease-out), height 440ms var(--ease-out),
+    min-height 440ms var(--ease-out), padding 440ms var(--ease-out),
+    transform 440ms var(--ease-out), border-radius 440ms var(--ease-out),
+    border-color var(--motion-ui) ease, box-shadow 440ms ease;
+}
+.site-nav .wordmark { transition: font-size 440ms var(--ease-out); }
+.site-nav .desktop-nav { transition: gap 440ms var(--ease-out); }
+.site-nav.is-floating {
+  --nav-bar-height: 66px;
+  --nav-offset: 12px;
+  --nav-width: min(1120px, calc(100% - 2 * var(--nav-inset)));
+}
+.site-nav.is-floating .site-header {
+  padding: 10px clamp(16px, 2.5vw, 32px);
+  border-color: var(--color-line);
+  border-radius: 5px;
+  box-shadow: 0 6px 24px #20251e14, 0 1px 4px #20251e08;
+}
+.site-nav.is-floating .wordmark { font-size: clamp(21px, 1.7vw, 25px); }
+.site-nav.is-floating .desktop-nav { gap: clamp(16px, 2vw, 24px); }
+
+/* The dropdown follows the bar's width and position, above the page content. */
+@media (max-width: 760px) {
+  .site-nav { --nav-slot-height: 74px; --nav-bar-height: 74px; }
+  .site-nav .site-header { gap: 12px; }
+  .site-nav .menu-toggle { width: 44px; padding-inline: 10px; }
+  .site-nav .header-actions { gap: 8px; }
+  .site-nav.is-floating { --nav-bar-height: 64px; --nav-offset: 10px; }
+  .site-nav.is-floating .site-header { padding: 9px 12px; }
+  .site-nav.is-floating .wordmark { font-size: 20px; }
+  .site-nav .mobile-menu {
+    position: absolute;
+    top: calc(var(--nav-bar-height) + var(--nav-offset) + 6px);
+    left: 50%;
+    width: var(--nav-width);
+    padding-inline: max(20px, var(--page-gutter));
+    border-radius: 5px;
+    transform: translate(-50%, -8px);
+    pointer-events: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 8px 24px #20251e14;
+    transition: max-height var(--motion-dialog) var(--ease-out), padding var(--motion-dialog) var(--ease-out),
+      opacity var(--motion-ui) ease, transform var(--motion-dialog) var(--ease-out),
+      border-bottom-width var(--motion-ui) ease, width 440ms var(--ease-out), top 440ms var(--ease-out);
+  }
+  .site-nav .mobile-menu.is-open {
+    max-height: min(240px, calc(100dvh - var(--nav-bar-height) - var(--nav-offset) - 24px));
+    transform: translate(-50%, 0);
+  }
+  @starting-style {
+    .site-nav .mobile-menu.is-open {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-width: 0;
+      transform: translate(-50%, -8px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav *, .site-nav *::before, .site-nav *::after { transition: none !important; animation: none !important; }
+}

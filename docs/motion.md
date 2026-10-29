@@ -1,7 +1,7 @@
 # Interaction motion
 
-All animation is native CSS in `assets/css/motion.css`, loaded last by `main.css`.
-There are no animation libraries, CDN scripts, or build dependencies.
+Animation is native CSS in `assets/css/motion.css` and `assets/css/header.css`.
+There are no animation libraries or build dependencies.
 
 - Bag drawer: 480 ms eased slide in; 300 ms exit with a fading backdrop.
 - Product dialog: 360 ms soft rise and scale; 240 ms exit.
@@ -10,9 +10,22 @@ There are no animation libraries, CDN scripts, or build dependencies.
 - Product cards, size controls, gallery controls, and collection filters share
   the same easing. Hover movement is limited to devices with a fine pointer.
 - Toasts fade and rise; their exit completes before they become hidden.
-- Mobile navigation expands and collapses in normal page flow. Hidden links
+- Mobile navigation expands and collapses beneath the sticky header. Hidden links
   become inert as soon as closing starts. Escape, outside clicks, and switching
   to a desktop viewport dismiss it.
+- The header stays visible while scrolling. After 64 px it eases into a centered
+  floating bar, up to 1120 px wide, with a 12 px top gap (10 px on mobile),
+  a smaller wordmark, subtle shadow, and 5 px corners. Scrolling back to 24 px
+  restores its full width. Separate thresholds prevent flicker. Its original
+  height stays reserved, so the page content does not jump. Existing 100 px
+  anchor scroll padding keeps section headings clear of the bar.
+
+`assets/js/features/sticky-header.js` groups the existing header and mobile menu
+on both storefront pages, coalesces passive scroll events into one animation
+frame, and toggles one CSS class. It also handles restored scroll positions.
+With scripting unavailable, the full-width header still uses CSS sticky positioning.
+Run `node tests/sticky-header.test.cjs` for seven checks covering node preservation,
+scroll thresholds, bounce scroll, restored positions, frame coalescing, and cleanup.
 
 `assets/js/utils/motion.js` only coordinates visibility and native dialog
 lifecycles. It waits for CSS animations/transitions through `getAnimations()`

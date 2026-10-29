@@ -4,6 +4,7 @@ import { initCartUI } from './features/cart-ui.js';
 import { initProductDialog } from './features/product-dialog.js';
 import { initCatalog } from './pages/catalog.js';
 import { createDisclosure } from './utils/motion.js';
+import { initStickyHeader } from './features/sticky-header.js';
 
 function getDialogRoot() {
   let root = document.querySelector('[data-dialog-root]');
@@ -70,6 +71,7 @@ function initMobileMenu() {
 }
 
 function init() {
+  initStickyHeader();
   const dialogRoot = getDialogRoot();
   const showToast = initToast();
   const productDialog = initProductDialog({
