@@ -1,8 +1,15 @@
-const productImageUrl = (productId, filename = 'base.webp') => (
+const productImageUrl = (productId, filename = 'base-v3.webp') => (
   new URL(`../../images/photorealistic/products/${productId}/${filename}`, import.meta.url).href
 );
 
 const sharedSizes = Object.freeze(['XS', 'S', 'M', 'L', 'XL']);
+
+const fieldViews = Object.freeze({
+  'traverse-short': 'Charcoal Traverse shorts floating with windblown dust against an empty neutral studio backdrop, CGI concept render',
+  'contour-merino': 'Dry stone Contour merino long sleeve floating in warm sunlight against an empty neutral studio backdrop, CGI concept render',
+  'altitude-fleece': 'Moss Altitude quarter-zip fleece floating among snowflakes against an empty neutral studio backdrop, CGI concept render',
+  'strata-shell': 'Sulphur Strata hooded shell floating in rain against an empty neutral studio backdrop, CGI concept render',
+});
 
 const weatherViews = Object.freeze({
   'traverse-short': 'Close-up of an adult trekker wearing charcoal Traverse shorts while stepping over wet granite in heavy rain',
@@ -89,13 +96,14 @@ export const products = Object.freeze([
   },
 ].map((product, featuredIndex) => Object.freeze({
   ...product,
+  imageAlt: fieldViews[product.id],
   featuredIndex,
   images: Object.freeze([
     Object.freeze({
       src: product.image,
-      alt: `${product.name} in ${product.color}, floating studio product photograph`,
-      label: 'Studio',
-      fit: 'contain',
+      alt: fieldViews[product.id],
+      label: 'Elements render',
+      fit: 'cover',
     }),
     Object.freeze({
       src: productImageUrl(product.id, 'lifestyle-01.webp'),

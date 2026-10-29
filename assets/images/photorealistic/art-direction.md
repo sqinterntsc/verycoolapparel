@@ -23,4 +23,4 @@ Nike ACG and Arc'teryx are market and visual references only. These images do no
 Wide alpine basin after sunrise, charcoal granite, pale glacier, muted moss vegetation, restrained warm ridge light. Strongest landscape detail on the right; calm left-center/top-left for website copy. No typography baked in, no people, no buildings.
 
 ## Delivery boundary
-Save product images in `products/<product-slug>/`, using `base.webp` for the primary storefront image. Save campaign landscapes and other non-product imagery in `editorial/`. Preserve the earlier storefront illustrations in the parent image directory.
+Save product images in `products/<product-slug>/`, using `base-v3.webp` for the primary storefront image and preserving the original `base.webp`. Save campaign landscapes and other non-product imagery in `editorial/`. Preserve the earlier storefront illustrations in the parent image directory.

@@ -29,7 +29,7 @@ assets/
     pages.css                    Landing and collection page layouts
   images/                        Preserved illustration assets
     photorealistic/
-      products/<product>/       Product-specific image sets; base.webp is primary
+      products/<product>/       Product-specific image sets; base-v3.webp is primary
       editorial/                Campaign and landscape imagery
   js/
     app.js                       Shared initialization
@@ -61,7 +61,7 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Assets and concept limitations
 
-The live storefront uses four AI-generated photorealistic garment concepts and one campaign landscape. Product images live in product-specific directories under `assets/images/photorealistic/products/`; `base.webp` is the primary storefront image. The earlier locally rendered illustrations remain preserved directly under `assets/images/`. See `assets/images/photorealistic/` and `docs/assets/` for provenance, art direction, prompts, and source artwork.
+The live storefront uses four AI-generated photorealistic garment concepts and one campaign landscape. Product images live in product-specific directories under `assets/images/photorealistic/products/`; `base-v3.webp` is the primary storefront image; the original `base.webp` files remain preserved. The earlier locally rendered illustrations remain preserved directly under `assets/images/`. See `assets/images/photorealistic/` and `docs/assets/` for provenance, art direction, prompts, and source artwork.
 
 All garments, specifications, and USD prices are concept content. The shell is an original technical design; no third-party textile licensing or certification is claimed. There is no inventory service, checkout integration, payment collection, or order submission. The bag's demo checkout explicitly explains this and creates no order.
 
