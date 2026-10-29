@@ -1,6 +1,6 @@
 # Photorealistic image retry pack
 
-Status: five photorealistic AI-generated launch concept images are complete, reviewed, and linked from the storefront. Open `index.html` in this directory to review the set; `verycoolapparel-launch-images.zip` is the original flat delivery bundle. The earlier service-authentication diagnosis is preserved below as historical context.
+Status: five photorealistic AI-generated launch concept images are complete, reviewed, and linked from the storefront. Open `index.html` in this directory to review and download the individual images. The earlier service-authentication diagnosis is preserved below as historical context.
 
 ## Asset structure
 
