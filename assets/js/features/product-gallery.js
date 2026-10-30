@@ -28,10 +28,10 @@ export function initProductGallery(root) {
     </div>
     <div class="product-gallery__toolbar">
       <button class="product-gallery__arrow product-gallery__previous" type="button" aria-label="Previous product image">←</button>
-      <p class="product-gallery__status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="product-gallery__thumbnails" role="group" aria-label="Choose a product image"></div>
       <button class="product-gallery__arrow product-gallery__next" type="button" aria-label="Next product image">→</button>
+      <p class="product-gallery__status sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
     </div>
-    <div class="product-gallery__thumbnails" role="group" aria-label="Choose a product image"></div>
     <p class="sr-only" id="product-gallery-hint">Use left and right arrow keys or swipe to change product images.</p>`;
 
   const viewport = root.querySelector('.product-gallery__viewport');
@@ -39,6 +39,7 @@ export function initProductGallery(root) {
   const error = root.querySelector('.product-gallery__error');
   const previous = root.querySelector('.product-gallery__previous');
   const next = root.querySelector('.product-gallery__next');
+  const toolbar = root.querySelector('.product-gallery__toolbar');
   const status = root.querySelector('.product-gallery__status');
   const thumbnails = root.querySelector('.product-gallery__thumbnails');
   let images = [];
@@ -69,20 +70,12 @@ export function initProductGallery(root) {
     pointerStart = null;
     root.setAttribute('aria-label', `${product.name} images`);
     previous.hidden = next.hidden = thumbnails.hidden = images.length < 2;
+    toolbar.hidden = images.length < 2;
     const fragment = document.createDocumentFragment();
     images.forEach((entry, imageIndex) => {
       const button = element('button', 'product-gallery__thumbnail');
       button.type = 'button';
       button.setAttribute('aria-label', `Show ${entry.label || 'product view'}: image ${imageIndex + 1} of ${images.length}`);
-      const thumbnail = element('img', 'product-gallery__thumbnail-image');
-      thumbnail.src = entry.src;
-      thumbnail.alt = '';
-      thumbnail.width = 52;
-      thumbnail.height = 52;
-      thumbnail.loading = 'lazy';
-      const media = element('span', 'product-gallery__thumbnail-media');
-      media.append(thumbnail);
-      button.append(media, element('span', 'product-gallery__thumbnail-label', entry.label || `View ${imageIndex + 1}`));
       button.addEventListener('click', () => showImage(imageIndex));
       fragment.append(button);
     });

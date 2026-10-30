@@ -53,7 +53,7 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Shopping behavior
 
-- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a three-image gallery: floating Studio photograph, an on-body rain/snow close-up, and an extreme-angle Off axis view. Navigate with arrows, thumbnails, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to Studio; switching views preserves the selected size.
+- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a three-image gallery: a floating product image, an on-body rain/snow close-up, and an extreme-angle view. Navigate with the overlaid arrows and dots, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to the first image; switching views preserves the selected size.
 - Each product/size combination is a separate bag item. Increase or decrease quantities and remove items.
 - The header count and subtotal update immediately. Bags persist in `localStorage` and synchronize across tabs on the same origin. Storage restrictions fall back to an in-memory bag.
 - The collection supports category filters, category links, text search, and price sorting.
