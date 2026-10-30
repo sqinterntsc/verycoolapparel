@@ -40,19 +40,17 @@ fbq('track', 'PageView');
 ```
 
 ```js
-trackAddToCart({
-  productId: addedProduct.id,
-  productName: addedProduct.name,
-  category: addedProduct.categoryLabel,
+addProductToCart({
+  product: addedProduct,
   size: addedSize,
-  price: addedProduct.price,
-  quantity: 1,
-  currency: 'USD',
-  onTracked: ({ eventName, eventID, eventPayload }) => {
-    console.log(`[Meta Pixel] ${eventName} queued`, { eventID, eventPayload });
-  }
+  quantity: selectedQuantity,
 });
 ```
+
+All product cart changes go through `assets/js/features/cart-actions.js`. The quick-shop modal uses
+`addProductToCart`; the bag quantity controls use `setProductQuantity`; and the bag remove control uses
+`removeProductFromCart`. These actions update cart state and call the existing trackers with the actual
+quantity changed, so capped or no-op changes are never over-reported.
 
 Example commerce event for future implementation:
 

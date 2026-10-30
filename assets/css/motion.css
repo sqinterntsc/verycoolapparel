@@ -91,7 +91,7 @@ html { scrollbar-gutter: stable; }
   display: inline-block;
   transition: transform var(--motion-ui) var(--ease-out);
 }
-:is(.product-dialog__size, .product-gallery__arrow, .product-gallery__thumbnail, .category-filters button, .cart-item__quantity button) {
+:is(.product-dialog__size, .product-dialog__quantity-control button, .product-gallery__arrow, .product-gallery__thumbnail, .category-filters button, .cart-item__quantity button) {
   transition: background-color var(--motion-ui) ease, color var(--motion-ui) ease,
     border-color var(--motion-ui) ease, transform var(--motion-ui) var(--ease-out);
 }
@@ -133,7 +133,7 @@ html { scrollbar-gutter: stable; }
   .product-card__media:hover::after { transform: translate(2px, -2px); }
   .hero-bottomline a:hover span { transform: translateY(3px); }
 }
-:is(.button, .product-dialog__add, .cart-drawer__continue, .cart-drawer__checkout, .product-dialog__size,
+:is(.button, .product-dialog__add, .cart-drawer__continue, .cart-drawer__checkout, .product-dialog__size, .product-dialog__quantity-control button,
   .product-gallery__arrow, .product-gallery__thumbnail, .category-filters button, .cart-item__quantity button):not(:disabled):active {
   transform: translateY(0) scale(.975);
   box-shadow: none;
@@ -179,7 +179,7 @@ html { scrollbar-gutter: stable; }
   .button:hover span, .product-card__media:hover .product-card__image,
   .text-link:focus-visible span, .system-steps a:is(:hover, :focus-visible) .step-arrow,
   .bag-button:hover svg, .hero-bottomline a:hover span { transform: none; }
-  :is(.product-dialog__add, .cart-drawer__continue, .cart-drawer__checkout, .product-gallery__arrow,
+  :is(.product-dialog__add, .cart-drawer__continue, .cart-drawer__checkout, .product-dialog__quantity-control button, .product-gallery__arrow,
     .category-filters button, .cart-item__quantity button):not(:disabled):is(:hover, :active),
   .product-dialog__add:not(:disabled):hover::after,
   :is(.product-dialog__add, .product-dialog__close, .cart-drawer__close, .product-card__action):hover::after,

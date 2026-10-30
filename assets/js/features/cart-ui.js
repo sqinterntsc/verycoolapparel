@@ -3,48 +3,13 @@ import {
   getCartSubtotal,
   getDetailedCart,
   MAX_CART_QUANTITY,
-  removeItem,
-  setItemQuantity,
   subscribe,
 } from './cart-store.js';
 import { formatCurrency } from '../utils/currency.js';
-import { trackAddToCart, trackRemoveFromCart } from '../utils/meta-events.js';
+import { removeProductFromCart, setProductQuantity } from './cart-actions.js';
 import { createDialogMotion } from '../utils/motion.js';
 
 const catalogUrl = new URL('../../../products/', import.meta.url).href;
-
-const logTrackedMetaEvent = ({ eventName, eventID, eventPayload }) => {
-  console.log(`[Meta Pixel] ${eventName} queued`, {
-    eventID,
-    eventPayload,
-  });
-};
-
-const trackProductAddition = ({ product, size, quantity }) => {
-  trackAddToCart({
-    productId: product.id,
-    productName: product.name,
-    category: product.categoryLabel,
-    size,
-    price: product.price,
-    quantity,
-    currency: 'USD',
-    onTracked: logTrackedMetaEvent,
-  });
-};
-
-const trackProductRemoval = ({ product, size, quantity }) => {
-  trackRemoveFromCart({
-    productId: product.id,
-    productName: product.name,
-    category: product.categoryLabel,
-    size,
-    price: product.price,
-    quantity,
-    currency: 'USD',
-    onTracked: logTrackedMetaEvent,
-  });
-};
 
 function updateCartCounts() {
   const count = getCartCount();
@@ -227,19 +192,23 @@ export function initCartUI({ root } = {}) {
 
     switch (button.dataset.cartAction) {
       case 'increase':
-        setItemQuantity(item.productId, item.size, item.quantity + 1);
-        trackProductAddition({ product: item.product, size: item.size, quantity: 1 });
-        break;
-      case 'decrease':
-        setItemQuantity(item.productId, item.size, item.quantity - 1);
-        trackProductRemoval({ product: item.product, size: item.size, quantity: 1 });
-        break;
-      case 'remove':
-        removeItem(item.productId, item.size);
-        trackProductRemoval({
+        setProductQuantity({
           product: item.product,
           size: item.size,
-          quantity: item.quantity,
+          quantity: item.quantity + 1,
+        });
+        break;
+      case 'decrease':
+        setProductQuantity({
+          product: item.product,
+          size: item.size,
+          quantity: item.quantity - 1,
+        });
+        break;
+      case 'remove':
+        removeProductFromCart({
+          product: item.product,
+          size: item.size,
         });
         break;
       default:

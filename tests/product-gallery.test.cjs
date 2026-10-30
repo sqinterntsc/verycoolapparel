@@ -65,7 +65,13 @@ const document = { createElement: (tag) => new Element(tag),
   querySelector: () => null };
 const added = []; const callbacks = [];
 const context = vm.createContext({ document, HTMLElement: Element, console,
-  addItem: (id, size) => added.push({ id, size }), formatCurrency: (price) => `$${price}` });
+  MAX_CART_QUANTITY: 99,
+  addProductToCart: ({ product, size, quantity }) => {
+    added.push({ id: product.id, size, quantity });
+    return { quantityChanged: quantity };
+  },
+  getRemainingProductQuantity: () => 99,
+  formatCurrency: (price) => `$${price}` });
 function load(relative) {
   let source = fs.readFileSync(path.join(base, relative), 'utf8');
   source = source.replace(/^import .*;\n/gm, '').replace(/\bexport /g, '');
@@ -104,6 +110,9 @@ const previous = gallery.querySelector('.product-gallery__previous');
 const thumbRoot = gallery.querySelector('.product-gallery__thumbnails');
 const add = dialog.querySelector('.product-dialog__add');
 const sizes = dialog.querySelector('.product-dialog__sizes');
+const decreaseQuantity = dialog.querySelector('.product-dialog__quantity-decrease');
+const increaseQuantity = dialog.querySelector('.product-dialog__quantity-increase');
+const quantityValue = dialog.querySelector('.product-dialog__quantity-value');
 const trigger = new Element('button');
 check('opens on studio with labelled two-image gallery and disabled add', () => {
   controller.open(product('strata-shell'), trigger);
@@ -151,15 +160,20 @@ check('image failure is recoverable by navigating to another view', () => {
   next.emit('click'); assert.equal(image.hidden, false);
   assert.equal(gallery.querySelector('.product-gallery__error').hidden, true);
 });
-check('gallery navigation preserves selected size and add-to-bag contract', () => {
-  add.emit('click'); assert.deepEqual(added, [{ id: 'strata-shell', size: 'M' }]);
-  assert.equal(callbacks[0].size, 'M'); assert.equal(dialog.open, false);
+check('gallery navigation preserves selected size and supports multi-quantity add', () => {
+  increaseQuantity.emit('click'); increaseQuantity.emit('click');
+  assert.equal(quantityValue.textContent, '3'); assert.equal(add.textContent, 'Add 3 to bag');
+  add.emit('click');
+  assert.deepEqual(added, [{ id: 'strata-shell', size: 'M', quantity: 3 }]);
+  assert.equal(callbacks[0].size, 'M'); assert.equal(callbacks[0].quantity, 3);
+  assert.equal(dialog.open, false);
   assert.equal(document.activeElement, trigger);
 });
 check('reopening and switching products reset studio view and size', () => {
   controller.open(product('strata-shell'), trigger); next.emit('click'); controller.close();
   controller.open(product('contour-merino'), trigger);
   assert.equal(image.src, 'contour-merino-base.webp'); assert.equal(status.textContent, 'Studio · 1 / 2');
+  assert.equal(quantityValue.textContent, '1'); assert.equal(decreaseQuantity.disabled, true);
   assert.equal(add.disabled, true); assert.equal(sizes.querySelectorAll('button')[0].getAttribute('aria-pressed'), 'false');
 });
 check('three-image navigation reaches the new angle, wraps and resets on reopening', () => {

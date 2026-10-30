@@ -77,8 +77,9 @@ function init() {
   const showToast = initToast();
   const productDialog = initProductDialog({
     root: dialogRoot,
-    onAdded: ({ product, size }) => {
-      showToast(`${product.name}, size ${size}, added to your bag.`);
+    onAdded: ({ product, size, quantity }) => {
+      const quantityLabel = quantity > 1 ? `${quantity} × ` : '';
+      showToast(`${quantityLabel}${product.name}, size ${size}, added to your bag.`);
     },
   });
   const openProduct = (product, trigger) => productDialog.open(product, trigger);

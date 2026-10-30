@@ -1,15 +1,8 @@
-import { addItem } from './cart-store.js';
+import { MAX_CART_QUANTITY } from './cart-store.js';
+import { addProductToCart, getRemainingProductQuantity } from './cart-actions.js';
 import { createDialogMotion } from '../utils/motion.js';
 import { formatCurrency } from '../utils/currency.js';
 import { initProductGallery } from './product-gallery.js';
-import { trackAddToCart } from '../utils/meta-events.js';
-
-const logTrackedMetaEvent = ({ eventName, eventID, eventPayload }) => {
-  console.log(`[Meta Pixel] ${eventName} queued`, {
-    eventID,
-    eventPayload,
-  });
-};
 
 function element(tag, className, text = '') {
   const node = document.createElement(tag);
@@ -39,7 +32,17 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
             <div class="product-dialog__sizes"></div>
           </fieldset>
           <p class="product-dialog__validation" role="alert" hidden>Please choose a size.</p>
-          <button class="product-dialog__add" type="button" disabled>Add to bag</button>
+          <div class="product-dialog__purchase">
+            <div class="product-dialog__quantity">
+              <span class="product-dialog__quantity-label" id="product-dialog-quantity-label">Quantity</span>
+              <div class="product-dialog__quantity-control" role="group" aria-labelledby="product-dialog-quantity-label">
+                <button class="product-dialog__quantity-decrease" type="button" aria-label="Decrease quantity">−</button>
+                <output class="product-dialog__quantity-value" aria-live="polite">1</output>
+                <button class="product-dialog__quantity-increase" type="button" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+            <button class="product-dialog__add" type="button" disabled>Add to bag</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -54,32 +57,57 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
   const specs = dialog.querySelector('.product-dialog__specs');
   const sizes = dialog.querySelector('.product-dialog__sizes');
   const validation = dialog.querySelector('.product-dialog__validation');
+  const quantityValue = dialog.querySelector('.product-dialog__quantity-value');
+  const decreaseQuantity = dialog.querySelector('.product-dialog__quantity-decrease');
+  const increaseQuantity = dialog.querySelector('.product-dialog__quantity-increase');
   const addButton = dialog.querySelector('.product-dialog__add');
 
   let activeProduct = null;
   let selectedSize = null;
+  let quantity = 1;
+  let availableQuantity = MAX_CART_QUANTITY;
   const motion = createDialogMotion(dialog, closeButton);
+
+  function setQuantity(nextQuantity) {
+    const quantityLimit = Math.max(1, availableQuantity);
+    quantity = Math.max(1, Math.min(nextQuantity, quantityLimit));
+    quantityValue.textContent = String(quantity);
+    decreaseQuantity.disabled = quantity === 1 || availableQuantity === 0;
+    increaseQuantity.disabled = quantity === quantityLimit || availableQuantity === 0;
+    increaseQuantity.title = increaseQuantity.disabled
+      ? `Maximum quantity is ${MAX_CART_QUANTITY}`
+      : '';
+    addButton.textContent = quantity === 1 ? 'Add to bag' : `Add ${quantity} to bag`;
+  }
 
   function selectSize(size, selectedButton) {
     selectedSize = size;
+    availableQuantity = getRemainingProductQuantity({ product: activeProduct, size });
+    setQuantity(quantity);
     sizes.querySelectorAll('button').forEach((button) => {
       const selected = button === selectedButton;
       button.classList.toggle('is-selected', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    addButton.disabled = false;
-    validation.hidden = true;
+    addButton.disabled = availableQuantity === 0;
+    validation.textContent = availableQuantity === 0
+      ? `Maximum quantity is ${MAX_CART_QUANTITY}.`
+      : 'Please choose a size.';
+    validation.hidden = availableQuantity !== 0;
   }
 
   function populate(product) {
     activeProduct = product;
     selectedSize = null;
+    availableQuantity = MAX_CART_QUANTITY;
+    setQuantity(1);
     gallery.setProduct(product);
     eyebrow.textContent = `${product.categoryLabel} · ${product.color}`;
     title.textContent = product.name;
     price.textContent = formatCurrency(product.price);
     description.textContent = product.description;
     addButton.disabled = true;
+    validation.textContent = 'Please choose a size.';
     validation.hidden = true;
 
     const specFragment = document.createDocumentFragment();
@@ -115,6 +143,8 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
   }
 
   closeButton.addEventListener('click', close);
+  decreaseQuantity.addEventListener('click', () => setQuantity(quantity - 1));
+  increaseQuantity.addEventListener('click', () => setQuantity(quantity + 1));
   addButton.addEventListener('click', () => {
     if (motion.closing) return;
     if (!activeProduct || !selectedSize) {
@@ -123,23 +153,22 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
       return;
     }
 
-    addItem(activeProduct.id, selectedSize);
     const addedProduct = activeProduct;
     const addedSize = selectedSize;
-
-    trackAddToCart({
-      productId: addedProduct.id,
-      productName: addedProduct.name,
-      category: addedProduct.categoryLabel,
+    const { quantityChanged } = addProductToCart({
+      product: addedProduct,
       size: addedSize,
-      price: addedProduct.price,
-      quantity: 1,
-      currency: 'USD',
-      onTracked: logTrackedMetaEvent,
+      quantity,
     });
 
+    if (!quantityChanged) {
+      validation.textContent = `Maximum quantity is ${MAX_CART_QUANTITY}.`;
+      validation.hidden = false;
+      return;
+    }
+
     close();
-    onAdded({ product: addedProduct, size: addedSize });
+    onAdded({ product: addedProduct, size: addedSize, quantity: quantityChanged });
   });
 
   return { open, close, dialog };
