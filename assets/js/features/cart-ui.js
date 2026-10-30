@@ -8,9 +8,43 @@ import {
   subscribe,
 } from './cart-store.js';
 import { formatCurrency } from '../utils/currency.js';
+import { trackAddToCart, trackRemoveFromCart } from '../utils/meta-events.js';
 import { createDialogMotion } from '../utils/motion.js';
 
 const catalogUrl = new URL('../../../products/', import.meta.url).href;
+
+const logTrackedMetaEvent = ({ eventName, eventID, eventPayload }) => {
+  console.log(`[Meta Pixel] ${eventName} queued`, {
+    eventID,
+    eventPayload,
+  });
+};
+
+const trackProductAddition = ({ product, size, quantity }) => {
+  trackAddToCart({
+    productId: product.id,
+    productName: product.name,
+    category: product.categoryLabel,
+    size,
+    price: product.price,
+    quantity,
+    currency: 'USD',
+    onTracked: logTrackedMetaEvent,
+  });
+};
+
+const trackProductRemoval = ({ product, size, quantity }) => {
+  trackRemoveFromCart({
+    productId: product.id,
+    productName: product.name,
+    category: product.categoryLabel,
+    size,
+    price: product.price,
+    quantity,
+    currency: 'USD',
+    onTracked: logTrackedMetaEvent,
+  });
+};
 
 function updateCartCounts() {
   const count = getCartCount();
@@ -194,18 +228,45 @@ export function initCartUI({ root } = {}) {
     switch (button.dataset.cartAction) {
       case 'increase':
         setItemQuantity(item.productId, item.size, item.quantity + 1);
+        trackProductAddition({ product: item.product, size: item.size, quantity: 1 });
         break;
       case 'decrease':
         setItemQuantity(item.productId, item.size, item.quantity - 1);
+        trackProductRemoval({ product: item.product, size: item.size, quantity: 1 });
         break;
       case 'remove':
         removeItem(item.productId, item.size);
+        trackProductRemoval({
+          product: item.product,
+          size: item.size,
+          quantity: item.quantity,
+        });
         break;
       default:
         break;
     }
   });
   checkout.addEventListener('click', () => {
+    const cart = getDetailedCart();
+    const checkoutPayload = {
+      content_ids: cart.map(({ product }) => product.id),
+      content_type: 'product',
+      contents: cart.map(({ product, quantity }) => ({
+        id: product.id,
+        quantity,
+        item_price: product.price,
+      })),
+      num_items: getCartCount(),
+      value: getCartSubtotal(),
+      currency: 'USD',
+    };
+
+    const fbq = globalThis.fbq;
+    if (typeof fbq === 'function') {
+      fbq('track', 'InitiateCheckout', checkoutPayload);
+      console.log('[Meta Pixel] InitiateCheckout queued', checkoutPayload);
+    }
+
     message.textContent = 'This is a storefront demonstration. No payment or order has been created.';
     message.hidden = false;
     message.focus?.();

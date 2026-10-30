@@ -2,6 +2,14 @@ import { addItem } from './cart-store.js';
 import { createDialogMotion } from '../utils/motion.js';
 import { formatCurrency } from '../utils/currency.js';
 import { initProductGallery } from './product-gallery.js';
+import { trackAddToCart } from '../utils/meta-events.js';
+
+const logTrackedMetaEvent = ({ eventName, eventID, eventPayload }) => {
+  console.log(`[Meta Pixel] ${eventName} queued`, {
+    eventID,
+    eventPayload,
+  });
+};
 
 function element(tag, className, text = '') {
   const node = document.createElement(tag);
@@ -118,10 +126,21 @@ export function initProductDialog({ root, onAdded = () => {} } = {}) {
     addItem(activeProduct.id, selectedSize);
     const addedProduct = activeProduct;
     const addedSize = selectedSize;
+
+    trackAddToCart({
+      productId: addedProduct.id,
+      productName: addedProduct.name,
+      category: addedProduct.categoryLabel,
+      size: addedSize,
+      price: addedProduct.price,
+      quantity: 1,
+      currency: 'USD',
+      onTracked: logTrackedMetaEvent,
+    });
+
     close();
     onAdded({ product: addedProduct, size: addedSize });
   });
 
   return { open, close, dialog };
 }
-

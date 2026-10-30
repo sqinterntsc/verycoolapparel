@@ -8,6 +8,7 @@ Pixel ID: `1111051611838188`
 | --- | --- | --- |
 | The field system | `CheckCurrentProducts` | Desktop and mobile navigation on both pages |
 | Our approach | `ViewBrandStory` | Desktop, mobile, and footer navigation on both pages |
+| Reduce/remove product | `RemoveFromCart` | Bag quantity and remove controls for all products |
 
 ```html
 <a href="#field-system"
@@ -26,10 +27,31 @@ fbq('trackCustom', 'ViewBrandStory', {
 
 ## Standard events
 
-Page views are currently active:
+Currently active:
+
+| Event | Scope |
+| --- | --- |
+| `PageView` | Both pages |
+| `AddToCart` | Add-to-bag and quantity increase controls for all products |
+| `InitiateCheckout` | Demo checkout button |
 
 ```js
 fbq('track', 'PageView');
+```
+
+```js
+trackAddToCart({
+  productId: addedProduct.id,
+  productName: addedProduct.name,
+  category: addedProduct.categoryLabel,
+  size: addedSize,
+  price: addedProduct.price,
+  quantity: 1,
+  currency: 'USD',
+  onTracked: ({ eventName, eventID, eventPayload }) => {
+    console.log(`[Meta Pixel] ${eventName} queued`, { eventID, eventPayload });
+  }
+});
 ```
 
 Example commerce event for future implementation:
@@ -44,9 +66,40 @@ fbq('track', 'ViewContent', {
 });
 ```
 
+## Optional callback pattern
+
+The product trackers accept an optional callback inside their options object:
+
+```js
+const trackEvent = ({ eventPayload, onTracked = () => {} }) => {
+  fbq('track', 'ExampleEvent', eventPayload);
+
+  const trackedEvent = {
+    eventName: 'ExampleEvent',
+    eventPayload
+  };
+
+  onTracked(trackedEvent);
+  return trackedEvent;
+};
+```
+
+`onTracked = () => {}` is a default no-op function, so the tracker also works when no callback is supplied. Callers can later provide logging, debugging, UI, or server-forwarding behavior without changing the event payload or adding positional arguments.
+
+```js
+trackEvent({
+  eventPayload,
+  onTracked: ({ eventName, eventPayload }) => {
+    console.log(`${eventName} queued`, eventPayload);
+  }
+});
+```
+
+The callback runs after `fbq` is invoked. It confirms that the browser queued the call, not that Meta's server received it.
+
 ## Implementation preference
 
-Keep a small number of calls inline so they remain recognizable against Meta's documentation. Reconsider a shared helper only when several application-driven events need the same validation, parameters, or dynamic binding.
+Keep small, static navigation calls inline. Product events may use a shared function when their payload and event-ID behavior will be reused across products.
 
 ## Verify
 
