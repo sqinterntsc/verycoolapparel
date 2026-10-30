@@ -76,4 +76,3 @@ export function renderProductCards(container, products, options = {}) {
   products.forEach((product) => fragment.append(createProductCard(product, options)));
   container.replaceChildren(fragment);
 }
-

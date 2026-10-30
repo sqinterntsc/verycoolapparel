@@ -1,5 +1,6 @@
 import { products } from './data/products.js';
 import { renderProductCards } from './components/product-card.js';
+import { renderFieldSystemCards } from './components/field-system-card.js';
 import { initCartUI } from './features/cart-ui.js';
 import { initProductDialog } from './features/product-dialog.js';
 import { initCatalog } from './pages/catalog.js';
@@ -84,6 +85,9 @@ function init() {
 
   document.querySelectorAll('[data-product-grid]').forEach((grid) => {
     renderProductCards(grid, products, { onSelect: openProduct });
+  });
+  document.querySelectorAll('[data-field-system-grid]').forEach((grid) => {
+    renderFieldSystemCards(grid, products, { onSelect: openProduct });
   });
   initCatalog({ onSelect: openProduct });
   initCartUI({ root: dialogRoot });

@@ -41,8 +41,10 @@
     <a class="wordmark" href="../index.html" aria-label="Verycoolapparel home">verycoolapparel<span
         class="registered">®</span></a>
     <nav class="desktop-nav" aria-label="Main navigation"><a href="./index.html" aria-current="page">Shop all <span
-          class="nav-dot"></span></a><a href="../index.html#field-system">The field system</a><a
-        href="../index.html#our-approach">Our approach</a></nav>
+          class="nav-dot"></span></a><a href="../index.html#field-system"
+        onclick="fbq('trackCustom', 'CheckCurrentProducts', { link_location: 'desktop_navigation' });">The field system</a><a
+        href="../index.html#our-approach"
+        onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'desktop_navigation' });">Our approach</a></nav>
     <div class="header-actions"><button class="bag-button" type="button" data-cart-open
         aria-label="Open shopping bag"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M5 7.5h14l1 13H4l1-13Z" />
@@ -52,8 +54,10 @@
         aria-label="Open menu"><span></span><span></span></button></div>
   </header>
   <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden><a href="./index.html"
-      aria-current="page">Shop all</a><a href="../index.html#field-system">The field system</a><a
-      href="../index.html#our-approach">Our approach</a></nav>
+      aria-current="page">Shop all</a><a href="../index.html#field-system"
+      onclick="fbq('trackCustom', 'CheckCurrentProducts', { link_location: 'mobile_navigation' });">The field system</a><a
+      href="../index.html#our-approach"
+      onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'mobile_navigation' });">Our approach</a></nav>
 
   <main id="main-content" class="catalog-main">
     <section class="catalog-hero section" aria-labelledby="catalog-title">
@@ -107,7 +111,9 @@
     <div class="footer-top">
       <p>Keep your plans open.<br>And your layers ready.</p>
       <nav aria-label="Footer navigation"><a href="./index.html">Shop the collection ↗</a><a
-          href="../index.html#our-approach">Our approach ↗</a><button type="button" data-cart-open>Your bag ↗</button>
+          href="../index.html#our-approach"
+          onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'footer_navigation' });">Our approach ↗</a><button
+          type="button" data-cart-open>Your bag ↗</button>
       </nav>
     </div>
     <div class="footer-wordmark" aria-hidden="true">verycoolapparel<span>®</span></div>

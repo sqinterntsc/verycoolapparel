@@ -47,8 +47,11 @@
         class="registered">®</span></a>
     <nav class="desktop-nav" aria-label="Main navigation">
       <a href="./products/index.html">Shop all <span class="nav-dot"></span></a>
-      <a href="#field-system">The field system</a>
-      <a href="#our-approach">Our approach</a>
+      <a href="#field-system"
+        onclick="fbq('trackCustom', 'CheckCurrentProducts', { link_location: 'desktop_navigation' });">The field
+        system</a>
+      <a href="#our-approach"
+        onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'desktop_navigation' });">Our approach</a>
     </nav>
     <div class="header-actions">
       <button class="bag-button" type="button" data-cart-open aria-label="Open shopping bag"><svg viewBox="0 0 24 24"
@@ -61,8 +64,10 @@
     </div>
   </header>
   <nav id="mobile-menu" class="mobile-menu" aria-label="Mobile navigation" hidden>
-    <a href="./products/index.html">Shop all</a><a href="#field-system">The field system</a><a href="#our-approach">Our
-      approach</a>
+    <a href="./products/index.html">Shop all</a><a href="#field-system"
+      onclick="fbq('trackCustom', 'CheckCurrentProducts', { link_location: 'mobile_navigation' });">The field
+      system</a><a href="#our-approach"
+      onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'mobile_navigation' });">Our approach</a>
   </nav>
 
   <main id="main-content">
@@ -93,7 +98,7 @@
         <path d="m22 6 12 25M45 2l-3 29" />
       </svg></div>
 
-    <!-- Cards draw from assets/js/data/products.js. Product data lives in one place. -->
+    <!-- This editorial system view and the catalog both draw from the shared product data. -->
     <section id="field-system" class="section collection-section" aria-labelledby="collection-title">
       <div class="section-heading">
         <div>
@@ -102,8 +107,11 @@
         </div>
         <a class="text-link" href="./products/index.html">Shop all layers <span aria-hidden="true">↗</span></a>
       </div>
-      <p class="section-intro">Four essentials. One adaptable system. Find your own way out.</p>
-      <div class="product-grid" data-product-grid aria-label="The field system collection"></div>
+      <div class="collection-intro-row">
+        <p class="section-intro">Four essentials. One adaptable system. Find your own way out.</p>
+        <p class="collection-index" aria-hidden="true">01—04 / ALL CONDITIONS</p>
+      </div>
+      <div class="field-system-grid" data-field-system-grid aria-label="The field system collection"></div>
       <noscript>
         <p>Enable JavaScript to shop the four-piece collection and use your bag.</p>
       </noscript>
@@ -156,7 +164,9 @@
     <div class="footer-top">
       <p>Keep your plans open.<br>And your layers ready.</p>
       <nav aria-label="Footer navigation"><a href="./products/index.html">Shop the collection ↗</a><a
-          href="#our-approach">Our approach ↗</a><button type="button" data-cart-open>Your bag ↗</button></nav>
+          href="#our-approach"
+          onclick="fbq('trackCustom', 'ViewBrandStory', { link_location: 'footer_navigation' });">Our approach
+          ↗</a><button type="button" data-cart-open>Your bag ↗</button></nav>
     </div>
     <div class="footer-wordmark" aria-hidden="true">verycoolapparel<span>®</span></div>
     <div class="footer-bottom"><span>© 2026 VERYCOOLAPPAREL</span><span>DESIGNED FOR THE WAY OUT.</span><span>FRONTEND
