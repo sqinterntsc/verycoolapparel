@@ -31,7 +31,9 @@ For a manual build, run `npm run build` with `.env` configured or `BACKEND_URL` 
 
 `cart-actions.js` calls the API after `cart-store.js` commits a successful quantity increase. It sends the actual added quantity and value, current event time, page URL, browser user agent and available `_fbp`/`_fbc` cookie values. No sample email hash or phone placeholder is sent. Quantity decreases, removals and changes capped at the cart limit do not submit AddToCart events.
 
-IDs have the form `addcart.<pixel_id>.<UUIDv7>`. The same ID is sent as Pixel `eventID` and backend `event_id` for deduplication. `PIXEL_ID` in `assets/js/utils/meta-events.js` matches the Pixel initialized on both HTML pages; keep them aligned if you change the Pixel.
+The Cloudflare backend captures the visitor's public IP from `CF-Connecting-IP`, logs it on production request receipt and adds it to the Meta payload as `user_data.client_ip_address`. The browser does not need to look up or submit its IP address. Deploy the backend IP capture changes to enable this behavior; the plain local Node server does not capture a public IP.
+
+IDs have the form `addcart.<pixel_id>.<UUIDv4>`, generated using native `crypto.randomUUID()`. The same ID is sent as Pixel `eventID` and backend `event_id` for deduplication. `PIXEL_ID` in `assets/js/utils/meta-events.js` matches the Pixel initialized on both HTML pages; keep them aligned if you change the Pixel.
 
 The fetch call runs asynchronously. The cart remains usable if reporting fails; Meta's response status/body or network errors appear in the browser console under `[Meta CAPI]`. A fresh event ID is generated for each addition, including repeated additions of the same product.
 
