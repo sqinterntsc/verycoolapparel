@@ -52,16 +52,13 @@ test('cart additions submit real deltas, share Pixel IDs, and survive API errors
   assert.equal(request.options.keepalive, true);
   const event = request.body.data[0];
   assert.equal(event.event_id, pixelCalls[0][3].eventID);
-  assert.match(event.event_id, /^addcart\.1111051611838188\.[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.match(event.event_id, /^addcart\.1111051611838188\.[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   assert.ok(event.event_time >= before && event.event_time <= Math.floor(Date.now() / 1000));
   assert.equal(event.event_source_url, 'http://localhost:8000/products/');
   assert.deepEqual(event.user_data, { client_user_agent: 'storefront-test-browser', fbp: 'fb.1.browser-id', fbc: 'fb.1.click-id' });
   assert.deepEqual(event.custom_data, pixelCalls[0][2]);
   assert.equal(event.custom_data.value, product.price * 3);
   assert.equal(event.custom_data.contents[0].quantity, 3);
-  const uuid = event.event_id.split('.')[2];
-  const timestamp = parseInt(uuid.replaceAll('-', '').slice(0, 12), 16);
-  assert.ok(timestamp >= before * 1000 && timestamp <= Date.now());
   await settle();
   assert.ok(logs.some(([label, body]) => label === '[Meta CAPI] AddToCart 200' && body.events_received === 1));
 

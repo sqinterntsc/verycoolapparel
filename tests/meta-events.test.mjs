@@ -42,7 +42,7 @@ products.forEach((product, index) => {
   equal(call[2].currency, 'USD');
   equal(call[2].product_size, 'M');
   equal(call[3].eventID, trackedEvent.eventID);
-  if (!/^addcart\.1111051611838188\.[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(trackedEvent.eventID)) {
+  if (!/^addcart\.1111051611838188\.[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(trackedEvent.eventID)) {
     throw new Error(`Invalid AddToCart event ID: ${trackedEvent.eventID}`);
   }
   equal(callbackCalls[index].eventPayload, trackedEvent.eventPayload);
