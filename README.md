@@ -1,18 +1,39 @@
 # Verycoolapparel
 
-A premium outdoor apparel storefront built with **vanilla HTML, CSS, and JavaScript**. No framework, packages, build step, or application backend.
+A premium outdoor apparel storefront built with **vanilla HTML, CSS, and JavaScript**. A small build script generates public environment configuration; no framework or dependencies. Cart event reporting connects to the separate Verycoolapparel backend.
 
 ## Run locally
 
 From this folder:
 
 ```sh
-python3 -m http.server 8000
+cp .env.example .env
+npm run dev
 ```
 
-Open **http://localhost:8000**. The collection is at **http://localhost:8000/products/**.
+Requires Node.js 22+ and Python 3. Set `PORT` and `BACKEND_URL` in `.env`. Open **http://localhost:8000** with the example settings; the collection is at **http://localhost:8000/products/**. Restart the server after changing `.env`.
 
 Use a local HTTP server instead of double-clicking the HTML files: browsers restrict ES module imports on `file://` URLs. This command only serves static files; it does not implement an application backend.
+
+### AddToCart API
+
+Start the backend separately with `pnpm dev` in `../verycoolapparel-backend`. Cart events call `${BACKEND_URL}/api/prod/AddToCart`. Match the local backend's `PORT` to the port in `BACKEND_URL`. Set the backend's `FRONTEND_ORIGINS` to allow the storefront origin (including the local frontend `PORT`). The backend must have the new route, CORS configuration and Meta credentials deployed for the hosted integration to work.
+
+### GitHub Pages environment configuration
+
+1. In repository **Settings → Secrets and variables → Actions → Variables**, add `BACKEND_URL` with your deployed backend base URL (currently `https://verycoolapparel-backend.thiashanquan.workers.dev`). You can also set it as a variable on the `github-pages` environment.
+2. In **Settings → Pages**, select **GitHub Actions** as the deployment source.
+3. Push to `main` or run **Deploy GitHub Pages** manually. If your default branch differs, update `.github/workflows/pages.yml`.
+
+GitHub Pages cannot read environment variables at runtime. The workflow runs `npm run build`, writes only the public `BACKEND_URL` into `assets/js/env.js`, and deploys `_site/`. Changing the variable requires another deployment. Local `.env` files are ignored and excluded from the deployment artifact. Never put Meta access tokens in frontend configuration; keep them in the backend environment.
+
+For a manual build, run `npm run build` with `.env` configured or `BACKEND_URL` set in the shell. Browser URLs come from the generated config rather than hostname detection. A missing `BACKEND_URL` fails the build; if a page is served without generated config, cart changes still work and API reporting logs the missing setting.
+
+`cart-actions.js` calls the API after `cart-store.js` commits a successful quantity increase. It sends the actual added quantity and value, current event time, page URL, browser user agent and available `_fbp`/`_fbc` cookie values. No sample email hash or phone placeholder is sent. Quantity decreases, removals and changes capped at the cart limit do not submit AddToCart events.
+
+IDs have the form `addcart.<pixel_id>.<UUIDv7>`. The same ID is sent as Pixel `eventID` and backend `event_id` for deduplication. `PIXEL_ID` in `assets/js/utils/meta-events.js` matches the Pixel initialized on both HTML pages; keep them aligned if you change the Pixel.
+
+The fetch call runs asynchronously. The cart remains usable if reporting fails; Meta's response status/body or network errors appear in the browser console under `[Meta CAPI]`. A fresh event ID is generated for each addition, including repeated additions of the same product.
 
 ## Structure
 
@@ -33,9 +54,12 @@ assets/
       editorial/                Campaign and landscape imagery
   js/
     app.js                       Shared initialization
+    env.js                       Generated public BACKEND_URL configuration
     data/products.js             Collection data, prices, sizes, asset paths
     components/product-card.js   Shared product card renderer
     features/cart-store.js       Cart state, validation, localStorage
+    features/cart-actions.js     Cart actions, Pixel tracking and AddToCart fetch
+    utils/meta-events.js         Pixel payloads and UUIDv7 event IDs
     features/cart-ui.js          Bag drawer and quantity controls
     features/product-dialog.js  Product details and size selection
     pages/catalog.js             Category filtering, search, sorting
@@ -74,3 +98,6 @@ The product galleries have 13 dependency-free DOM-event regression checks in `te
 Cart and catalog logic were exercised in macOS JavaScriptCore: separate size variants, quantity changes, removal, subtotals, duplicate cart records, malformed storage, unavailable storage, category filtering, case-insensitive search, and both price sort directions passed. JavaScript bodies were checked for syntax, and static HTTP checks verified page links, module imports, stylesheet imports, and JavaScript MIME types.
 
 Interactive browser verification could not run in this environment: macOS denied Chrome's process launch, and the remote browser launcher was unavailable. Desktop and mobile browser interaction should be checked when opening the local site.
+
+
+Cart/API checks: `node --test tests/cart-api.test.mjs`, `node tests/cart-actions.test.mjs`, and `node tests/meta-events.test.mjs`. Transport is mocked, so these checks do not submit live Meta events.

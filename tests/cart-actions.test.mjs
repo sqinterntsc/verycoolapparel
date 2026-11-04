@@ -20,6 +20,9 @@ const equal = (actual, expected) => {
 
 const product = products[0];
 const size = product.sizes[0];
+// Stub transport: these cart checks must not submit live Meta events.
+globalThis.APP_ENV = { BACKEND_URL: 'https://api.storefront.example' };
+globalThis.fetch = async () => ({ ok: true, status: 200, text: async () => '{"events_received":1}' });
 const calls = [];
 globalThis.fbq = (...args) => calls.push(args);
 clearCart();

@@ -52,6 +52,8 @@ All product cart changes go through `assets/js/features/cart-actions.js`. The qu
 `removeProductFromCart`. These actions update cart state and call the existing trackers with the actual
 quantity changed, so capped or no-op changes are never over-reported.
 
+Successful quantity increases also use `fetch` to call `POST /api/prod/AddToCart` on the backend. Pixel `eventID` and the POST body's `event_id` share the value `addcart.<pixel_id>.<UUIDv7>`. Each addition generates a fresh ID. The request includes the page URL, browser identifiers, actual added quantity and value. API success/error details are logged under `[Meta CAPI]`; reporting failures do not interrupt the bag. See the README for local and hosted endpoint URLs.
+
 Example commerce event for future implementation:
 
 ```js

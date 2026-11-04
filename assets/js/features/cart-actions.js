@@ -26,7 +26,7 @@ function trackQuantityChange({ product, size, quantityChange }) {
   if (!quantityChange) return null;
 
   const track = quantityChange > 0 ? trackAddToCart : trackRemoveFromCart;
-  return track({
+  const event = track({
     productId: product.id,
     productName: product.name,
     category: product.categoryLabel,
@@ -36,6 +36,41 @@ function trackQuantityChange({ product, size, quantityChange }) {
     currency: 'USD',
     onTracked: logTrackedMetaEvent,
   });
+
+  if (quantityChange > 0) {
+    const backend = globalThis.APP_ENV?.BACKEND_URL;
+    if (!backend) {
+      console.error('[Meta CAPI] BACKEND_URL is missing. Generate the environment config before serving the site.');
+      return event;
+    }
+    const userData = { client_user_agent: globalThis.navigator?.userAgent };
+    const cookies = globalThis.document?.cookie || '';
+    for (const [cookieName, field] of [['_fbp', 'fbp'], ['_fbc', 'fbc']]) {
+      const value = cookies.match(new RegExp(`(?:^|;\\s*)${cookieName}=([^;]*)`))?.[1];
+      if (value) userData[field] = value;
+    }
+
+    // Reporting runs asynchronously so a failed API call does not interrupt the cart.
+    fetch(`${backend}/api/prod/AddToCart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({ data: [{
+        event_id: event.eventID,
+        event_time: Math.floor(Date.now() / 1000),
+        event_source_url: globalThis.location?.href,
+        user_data: userData,
+        custom_data: event.eventPayload,
+      }] }),
+    }).then(async response => {
+      const text = await response.text();
+      let body = text;
+      try { body = JSON.parse(text); } catch { /* Preserve non-JSON error responses. */ }
+      const log = response.ok ? console.log : console.error;
+      log(`[Meta CAPI] AddToCart ${response.status}`, body);
+    }).catch(error => console.error('[Meta CAPI] AddToCart request failed', error));
+  }
+  return event;
 }
 
 export function addProductToCart({ product, size, quantity = 1 }) {
