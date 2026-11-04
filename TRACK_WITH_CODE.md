@@ -27,6 +27,8 @@ fbq('trackCustom', 'ViewBrandStory', {
 
 ## Standard events
 
+See [Cart actions and event flow](docs/cart-event-flow.md) for an onboarding walkthrough of the button handlers, cart actions, Pixel calls and backend request. The product dialog quantity selector changes the intended addition; its **Add to bag** button commits it. The separate bag drawer quantity controls immediately change existing items.
+
 Currently active:
 
 | Event | Scope |
@@ -52,7 +54,7 @@ All product cart changes go through `assets/js/features/cart-actions.js`. The qu
 `removeProductFromCart`. These actions update cart state and call the existing trackers with the actual
 quantity changed, so capped or no-op changes are never over-reported.
 
-Successful quantity increases also use `fetch` to call `POST /api/prod/AddToCart` on the backend. Pixel `eventID` and the POST body's `event_id` share the value `addcart.<pixel_id>.<UUIDv7>`. Each addition generates a fresh ID. The request includes the page URL, browser identifiers, actual added quantity and value. API success/error details are logged under `[Meta CAPI]`; reporting failures do not interrupt the bag. See the README for local and hosted endpoint URLs.
+Successful quantity increases also use `fetch` to call `POST /api/prod/AddToCart` on the backend. Pixel `eventID` and the POST body's `event_id` share the value `addcart.<pixel_id>.<UUIDv4>`, generated using native `crypto.randomUUID()`. Each addition generates a fresh ID. The request includes the page URL, browser identifiers, actual added quantity and value. API success/error details are logged under `[Meta CAPI]`; reporting failures do not interrupt the bag. See the README for local and hosted endpoint URLs.
 
 Example commerce event for future implementation:
 

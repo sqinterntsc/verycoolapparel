@@ -17,6 +17,8 @@ Use a local HTTP server instead of double-clicking the HTML files: browsers rest
 
 ### AddToCart API
 
+For the button-by-button call paths, read [Cart actions and event flow](docs/cart-event-flow.md). The product dialog's quantity selector changes the intended addition; **Add to bag** commits it. The bag drawer's quantity buttons immediately update existing cart items.
+
 Start the backend separately with `pnpm dev` in `../verycoolapparel-backend`. Cart events call `${BACKEND_URL}/api/prod/AddToCart`. Match the local backend's `PORT` to the port in `BACKEND_URL`. Set the backend's `FRONTEND_ORIGINS` to allow the storefront origin (including the local frontend `PORT`). The backend must have the new route, CORS configuration and Meta credentials deployed for the hosted integration to work.
 
 ### GitHub Pages environment configuration
@@ -61,7 +63,7 @@ assets/
     components/product-card.js   Shared product card renderer
     features/cart-store.js       Cart state, validation, localStorage
     features/cart-actions.js     Cart actions, Pixel tracking and AddToCart fetch
-    utils/meta-events.js         Pixel payloads and UUIDv7 event IDs
+    utils/meta-events.js         Pixel payloads and native UUIDv4 event IDs
     features/cart-ui.js          Bag drawer and quantity controls
     features/product-dialog.js  Product details and size selection
     pages/catalog.js             Category filtering, search, sorting
