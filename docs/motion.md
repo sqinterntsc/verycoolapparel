@@ -4,7 +4,7 @@ Animation is native CSS in `assets/css/motion.css` and `assets/css/header.css`.
 There are no animation libraries or build dependencies.
 
 - Bag drawer: 480 ms eased slide in; 300 ms exit with a fading backdrop.
-- Product dialog: 360 ms soft rise and scale; 240 ms exit.
+- Product details use standard navigation to static pages.
 - Buttons: a subtle surface sweep, 2 px hover lift, directional icon movement,
   and a short press state. Hover transitions reverse when the pointer leaves.
 - Product cards, size controls, gallery controls, and collection filters share
@@ -21,7 +21,7 @@ There are no animation libraries or build dependencies.
   anchor scroll padding keeps section headings clear of the bar.
 
 `assets/js/features/sticky-header.js` groups the existing header and mobile menu
-on both storefront pages, coalesces passive scroll events into one animation
+on all storefront pages, coalesces passive scroll events into one animation
 frame, and toggles one CSS class. It also handles restored scroll positions.
 With scripting unavailable, the full-width header still uses CSS sticky positioning.
 Run `node tests/sticky-header.test.cjs` for seven checks covering node preservation,
@@ -42,7 +42,7 @@ Tune durations and easing with the `--motion-*` and `--ease-*` properties at the
 top of `motion.css`. Keep the reduced-motion override last.
 
 V3 product image framing is in `assets/css/images.css`. `--base-image-zoom: 1.45`
-makes the garment 45% larger in cards, quick shop, cart thumbnails, gallery
+makes the garment 45% larger in cards, product pages, cart thumbnails, gallery
 thumbnails, and the standalone image gallery. CSS `scale` provides the static
 crop independently of the hover `transform`, so reduced-motion and touch rules
 preserve the framing. Thumbnail wrappers clip the enlargement to the original
@@ -56,6 +56,7 @@ An optional browser suite is provided in `tests/motion-browser.py`. Install
 Playwright in a separate Python environment, run `playwright install chromium`,
 then `python tests/motion-browser.py`. It serves the site locally and saves
 screenshots in the system temporary directory; it adds no site dependencies.
+Pixel and CAPI calls are stubbed so it sends no live Meta events.
 
 Implementation verification: nine motion lifecycle checks and the twelve
 existing gallery/dialog checks passed (the latter with temporary DOM-double
@@ -64,3 +65,10 @@ all stylesheets parsed, and the static HTTP asset audit passed. Interactive
 browser QA remains unverified in this session: macOS denied Chromium's Mach
 port registration, the remote browser launcher was unavailable, and WebKit
 did not provide a usable session. The optional browser suite was syntax-checked.
+
+The static-product-page change was verified in the integrated browser: all four
+product routes, galleries, size and quantity controls, shared bag state, refreshes,
+Back/Forward navigation, repository-prefixed links and product view event counts
+passed. The optional Python suite now follows product links rather than testing
+the removed product modal. Its syntax was checked; the Python suite itself was
+not rerun.

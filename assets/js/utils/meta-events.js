@@ -1,5 +1,20 @@
-// Keep this aligned with fbq('init', ...) in index.html and products/index.html.
+// Keep this aligned with fbq('init', ...) in the HTML pages and product-page template.
 const PIXEL_ID = '1111051611838188';
+
+export function trackViewContent({ product }) {
+  const fbq = globalThis.fbq;
+  if (typeof fbq !== 'function') return null;
+  const eventPayload = {
+    content_ids: [product.id],
+    content_name: product.name,
+    content_category: product.categoryLabel,
+    content_type: 'product',
+    value: product.price,
+    currency: 'USD',
+  };
+  fbq('track', 'ViewContent', eventPayload);
+  return { eventName: 'ViewContent', eventPayload };
+}
 
 function createEventID(eventPrefix) {
   return `${eventPrefix}.${PIXEL_ID}.${crypto.randomUUID()}`;

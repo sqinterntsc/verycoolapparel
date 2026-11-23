@@ -1,5 +1,5 @@
 """Optional real-browser QA: python -m pip install playwright; playwright install chromium.
-Run with python tests/motion-browser.py. No browser tools are loaded by the site.
+Run with python tests/motion-browser.py. Pixel/CAPI are stubbed; no live Meta events are sent.
 """
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -12,6 +12,9 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 ARTIFACTS = Path(tempfile.gettempdir()) / 'verycoolapparel-motion-qa'
 ARTIFACTS.mkdir(exist_ok=True)
+
+
+ThreadingHTTPServer.request_queue_size = 128
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -53,12 +56,18 @@ def closing(page, selector):
 try:
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        context = browser.new_context(viewport={'width': 1440, 'height': 1000})
+        def test_context(**options):
+            context = browser.new_context(**options)
+            context.add_init_script("window.__metaCalls=[]; window.fbq=(...args)=>window.__metaCalls.push(args);")
+            context.route('**/api/prod/AddToCart', lambda route: route.fulfill(status=200, content_type='application/json', body='{"events_received":1}'))
+            return context
+
+        context = test_context(viewport={'width': 1440, 'height': 1000})
         page = context.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.goto(origin)
-        page.locator('.product-card').first.wait_for()
+        page.locator('.field-system-card').first.wait_for()
         page.screenshot(path=str(ARTIFACTS / 'desktop-home.png'))
 
         # Hover and mouse-out reverse through the same CSS transition.
@@ -71,25 +80,19 @@ try:
         settle(page, '.hero .button')
         check(cta.evaluate('e => getComputedStyle(e).transform') == 'none', 'CTA returns to rest on mouse-out')
 
-        trigger = page.locator('.product-card__media').first
+        trigger = page.locator('.field-system-card__button').first
+        expected_url = trigger.get_attribute('href')
         trigger.click()
-        opening(page, '.product-dialog')
-        check(page.locator('.product-dialog__close').evaluate('e => e === document.activeElement'), 'quick shop focuses its close control')
-        page.screenshot(path=str(ARTIFACTS / 'desktop-quick-shop.png'))
-        page.locator('.product-dialog__close').click()
-        closing(page, '.product-dialog')
-        check(trigger.evaluate('e => e === document.activeElement'), 'quick shop returns focus to its trigger')
-
-        trigger.click(); settle(page, '.product-dialog')
-        page.keyboard.press('Escape'); closing(page, '.product-dialog')
-        trigger.click(); settle(page, '.product-dialog')
-        page.mouse.click(8, 500); closing(page, '.product-dialog')
+        page.locator('[data-product-size]:enabled').first.wait_for()
+        check(page.url == expected_url, 'homepage product link navigates to its static page')
+        check(page.locator('.product-dialog').count() == 0, 'product pages mount no quick-shop modal')
+        check(page.locator('h1').inner_text() == 'Traverse Short', 'static page contains its product heading')
+        page.screenshot(path=str(ARTIFACTS / 'desktop-product.png'))
 
         # Add-to-bag flow plus a real toast entry and exit.
-        trigger.click(); settle(page, '.product-dialog')
-        page.locator('.product-dialog__size').first.click()
-        page.locator('.product-dialog__add').click()
-        closing(page, '.product-dialog')
+        page.locator('[data-product-size]').first.click()
+        page.locator('[data-product-add]').click()
+        check(page.url == expected_url, 'adding to the bag keeps the product page open')
         check(page.locator('[data-toast]').is_visible(), 'adding a product shows its confirmation toast')
         check(page.locator('[data-cart-count]').inner_text() == '1', 'adding a product updates the bag count')
         page.wait_for_function("() => { const t=document.querySelector('[data-toast]'); return !t.classList.contains('is-visible') && !t.hidden; }")
@@ -108,7 +111,7 @@ try:
 
         # Native CSS race handling is checked in a real browser as well as the unit suite.
         race = page.evaluate("""async () => {
-          const {createDialogMotion}=await import('./assets/js/utils/motion.js');
+          const {createDialogMotion}=await import(new URL('../../assets/js/utils/motion.js', location.href).href);
           const d=document.createElement('dialog'); d.className='cart-drawer'; document.body.append(d);
           const motion=createDialogMotion(d); motion.open();
           await Promise.allSettled(d.getAnimations().map(a=>a.finished));
@@ -122,14 +125,15 @@ try:
         page.goto(origin + '/products/')
         page.locator('[data-filter="shells"]').click()
         check(page.locator('.product-card').count() == 1, 'collection filters still work')
-        page.locator('.product-card__media').click(); opening(page, '.product-dialog')
-        page.keyboard.press('Escape'); closing(page, '.product-dialog')
+        page.locator('.product-card__media').click()
+        page.locator('[data-product-size]:enabled').first.wait_for()
+        check(page.url.endswith('/products/strata-shell/'), 'filtered catalog links to the matching static page')
 
-        mobile = browser.new_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True)
+        mobile = test_context(viewport={'width': 393, 'height': 852}, is_mobile=True, has_touch=True)
         mobile_page = mobile.new_page()
         mobile_page.on('pageerror', lambda error: errors.append(str(error)))
         mobile_page.goto(origin)
-        mobile_page.locator('.product-card').first.wait_for()
+        mobile_page.locator('.field-system-card').first.wait_for()
         toggle = mobile_page.locator('[data-menu-toggle]')
         toggle.click(); settle(mobile_page, '.mobile-menu')
         check(toggle.get_attribute('aria-label') == 'Close menu', 'mobile menu updates its accessible label')
@@ -150,18 +154,17 @@ try:
         check(mobile_page.locator('.cart-drawer').evaluate('e => e.getBoundingClientRect().width') <= 393, 'drawer fits the mobile viewport')
         mobile_page.screenshot(path=str(ARTIFACTS / 'mobile-bag.png'))
         mobile_page.locator('.cart-drawer__close').click(); closing(mobile_page, '.cart-drawer')
-        mobile_page.locator('.product-card__media').first.click(); opening(mobile_page, '.product-dialog')
-        check(mobile_page.locator('.product-dialog').evaluate('e => e.getBoundingClientRect().width') < 393, 'quick shop fits the mobile viewport')
-        mobile_page.screenshot(path=str(ARTIFACTS / 'mobile-quick-shop.png'))
-        mobile_page.keyboard.press('Escape'); closing(mobile_page, '.product-dialog')
+        mobile_page.locator('.field-system-card__button').first.click()
+        mobile_page.locator('[data-product-size]:enabled').first.wait_for()
+        check(mobile_page.locator('.product-page').evaluate('e => e.getBoundingClientRect().width') <= 393, 'product page fits the mobile viewport')
+        mobile_page.screenshot(path=str(ARTIFACTS / 'mobile-product.png'))
         check(mobile_page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'mobile page has no horizontal overflow')
 
-        reduced = browser.new_context(viewport={'width': 1440, 'height': 1000}, reduced_motion='reduce')
+        reduced = test_context(viewport={'width': 1440, 'height': 1000}, reduced_motion='reduce')
         rp = reduced.new_page(); rp.goto(origin)
-        rp.locator('.product-card__media').first.click()
-        check(rp.locator('.product-dialog').evaluate('e => e.getAnimations().length') == 0, 'reduced-motion quick shop has no CSS animation')
-        rp.keyboard.press('Escape')
-        check(rp.locator('.product-dialog').evaluate('e => !e.open'), 'reduced-motion dismissal is immediate')
+        rp.locator('.field-system-card__button').first.click()
+        rp.locator('[data-product-size]:enabled').first.wait_for()
+        check(rp.locator('.product-dialog').count() == 0, 'reduced-motion product navigation loads a static page')
         rp.locator('.bag-button').click()
         check(rp.locator('.cart-drawer').evaluate('e => e.getAnimations().length') == 0, 'reduced-motion drawer has no CSS animation')
         rp.locator('.cart-drawer__close').click()

@@ -1,25 +1,23 @@
 import { formatCurrency } from '../utils/currency.js';
+import { productUrl } from '../utils/product-url.js';
 
-function productButton(className, label, product, onSelect) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = className;
-  button.dataset.productOpen = product.id;
-  button.setAttribute('aria-label', label);
-  button.addEventListener('click', () => onSelect(product, button));
-  return button;
+function productLink(className, label, product) {
+  const link = document.createElement('a');
+  link.href = productUrl(product.id);
+  link.className = className;
+  link.setAttribute('aria-label', label);
+  return link;
 }
 
-export function createProductCard(product, { onSelect = () => {} } = {}) {
+export function createProductCard(product) {
   const card = document.createElement('article');
   card.className = 'product-card';
   card.dataset.productId = product.id;
 
-  const mediaButton = productButton(
+  const mediaButton = productLink(
     'product-card__media',
-    `Choose a size for ${product.name}`,
+    `View ${product.name}`,
     product,
-    onSelect,
   );
   const image = document.createElement('img');
   image.className = 'product-card__image';
@@ -38,11 +36,10 @@ export function createProductCard(product, { onSelect = () => {} } = {}) {
 
   const title = document.createElement('h3');
   title.className = 'product-card__title';
-  const titleButton = productButton(
+  const titleButton = productLink(
     'product-card__title-button',
-    `Choose a size for ${product.name}`,
+    `View ${product.name}`,
     product,
-    onSelect,
   );
   titleButton.textContent = product.name;
   title.append(titleButton);
@@ -57,22 +54,21 @@ export function createProductCard(product, { onSelect = () => {} } = {}) {
   price.textContent = formatCurrency(product.price);
   meta.append(color, price);
 
-  const action = productButton(
+  const action = productLink(
     'product-card__action',
-    `Quick shop ${product.name}`,
+    `View ${product.name}`,
     product,
-    onSelect,
   );
-  action.textContent = 'Add to bag';
+  action.textContent = 'View product';
 
   body.append(eyebrow, title, meta, action);
   card.append(mediaButton, body);
   return card;
 }
 
-export function renderProductCards(container, products, options = {}) {
+export function renderProductCards(container, products) {
   if (!container) return;
   const fragment = document.createDocumentFragment();
-  products.forEach((product) => fragment.append(createProductCard(product, options)));
+  products.forEach((product) => fragment.append(createProductCard(product)));
   container.replaceChildren(fragment);
 }

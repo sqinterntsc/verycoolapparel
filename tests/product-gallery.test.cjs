@@ -23,7 +23,7 @@ class Element {
   get textContent() { return this._text; }
   set innerHTML(html) {
     this.children = [];
-    // Extract the specific nodes the gallery/dialog controller queries.
+    // Extract the specific nodes the gallery controller queries.
     const regex = /<(\w+)([^>]*\bclass="([^"]+)"[^>]*)>/g;
     for (const match of html.matchAll(regex)) {
       const child = new Element(match[1]); child.className = match[3];
@@ -63,84 +63,59 @@ class Element {
 const document = { createElement: (tag) => new Element(tag),
   createDocumentFragment: () => new Element('fragment'), activeElement: null,
   querySelector: () => null };
-const added = []; const callbacks = [];
-const context = vm.createContext({ document, HTMLElement: Element, console,
-  MAX_CART_QUANTITY: 99,
-  addProductToCart: ({ product, size, quantity }) => {
-    added.push({ id: product.id, size, quantity });
-    return { quantityChanged: quantity };
-  },
-  getRemainingProductQuantity: () => 99,
-  formatCurrency: (price) => `$${price}` });
-function load(relative) {
-  let source = fs.readFileSync(path.join(base, relative), 'utf8');
-  source = source.replace(/^import .*;\n/gm, '').replace(/\bexport /g, '');
-  vm.runInContext(source, context, { filename: relative });
-}
-// Exercise the real motion helper's no-active-animation path in this DOM double.
-load('assets/js/utils/motion.js');
-load('assets/js/features/product-gallery.js');
-load('assets/js/features/product-dialog.js');
-const api = vm.runInContext('({getProductImages,wrapImageIndex,initProductGallery,initProductDialog})', context);
-const product = (id) => ({ id, name: id, image: `${id}-base.webp`, imageAlt: 'base',
-  categoryLabel: 'Shells', color: 'Sulphur', price: 348, description: 'Concept', sizes: ['S', 'M'],
-  specs: [{ label: 'Design', value: 'Concept' }], images: [
-    { src: `${id}-base.webp`, alt: 'Floating studio view', label: 'Studio', fit: 'contain' },
-    { src: `${id}-weather.webp`, alt: 'Worn in rain', label: 'In the elements', fit: 'cover' },
-  ] });
+const context = vm.createContext({ document, console });
+let gallerySource = fs.readFileSync(path.join(base, 'assets/js/features/product-gallery.js'), 'utf8');
+vm.runInContext(gallerySource.replace(/\bexport /g, ''), context);
+const api = vm.runInContext('({getProductImages,wrapImageIndex,initProductGallery})', context);
+const product = (id) => ({ id, name: id, image: `${id}-base.webp`, imageAlt: 'base', images: [
+  { src: `${id}-base.webp`, alt: 'Floating studio view', label: 'Studio', fit: 'contain' },
+  { src: `${id}-weather.webp`, alt: 'Worn in rain', label: 'In the elements', fit: 'cover' },
+  { src: `${id}-angle.webp`, alt: 'Extreme bottom-up view', label: 'Off axis', fit: 'cover' },
+] });
 let checks = 0;
 function check(name, run) { run(); checks++; console.log(`PASS ${name}`); }
 check('wraparound handles previous, next and empty collections', () => {
-  assert.equal(api.wrapImageIndex(-1, 2), 1); assert.equal(api.wrapImageIndex(2, 2), 0);
+  assert.equal(api.wrapImageIndex(-1, 3), 2); assert.equal(api.wrapImageIndex(3, 3), 0);
   assert.equal(api.wrapImageIndex(10, 0), 0);
 });
-check('legacy single image and malformed gallery entries', () => {
+check('single image and malformed gallery entries use the fallback', () => {
   assert.equal(api.getProductImages({ image: 'legacy.webp', imageAlt: 'legacy' })[0].src, 'legacy.webp');
   assert.equal(api.getProductImages({ image: 'fallback.webp', images: [null, {}, {src: ''}] })[0].src, 'fallback.webp');
 });
 const root = new Element();
-const controller = api.initProductDialog({ root, onAdded: (result) => callbacks.push(result) });
-const dialog = controller.dialog;
-const gallery = dialog.querySelector('.product-dialog__media');
-const image = gallery.querySelector('.product-dialog__image');
-const viewport = gallery.querySelector('.product-gallery__viewport');
-const status = gallery.querySelector('.product-gallery__status');
-const next = gallery.querySelector('.product-gallery__next');
-const previous = gallery.querySelector('.product-gallery__previous');
-const thumbRoot = gallery.querySelector('.product-gallery__thumbnails');
-const add = dialog.querySelector('.product-dialog__add');
-const sizes = dialog.querySelector('.product-dialog__sizes');
-const decreaseQuantity = dialog.querySelector('.product-dialog__quantity-decrease');
-const increaseQuantity = dialog.querySelector('.product-dialog__quantity-increase');
-const quantityValue = dialog.querySelector('.product-dialog__quantity-value');
-const trigger = new Element('button');
-check('opens on studio with labelled two-image gallery and disabled add', () => {
-  controller.open(product('strata-shell'), trigger);
-  assert.equal(dialog.open, true); assert.equal(image.src, 'strata-shell-base.webp');
+const controller = api.initProductGallery(root);
+controller.setProduct(product('strata-shell'));
+const image = root.querySelector('.product-dialog__image');
+const viewport = root.querySelector('.product-gallery__viewport');
+const status = root.querySelector('.product-gallery__status');
+const next = root.querySelector('.product-gallery__next');
+const previous = root.querySelector('.product-gallery__previous');
+const thumbRoot = root.querySelector('.product-gallery__thumbnails');
+check('starts on the first image with accessible labels', () => {
+  assert.equal(image.src, 'strata-shell-base.webp');
   assert.equal(image.alt, 'Floating studio view'); assert.equal(image.dataset.fit, 'contain');
-  assert.equal(status.textContent, 'Studio · 1 / 2'); assert.equal(add.disabled, true);
-  assert.equal(thumbRoot.querySelectorAll('button').length, 2);
-  assert.equal(gallery.getAttribute('aria-roledescription'), 'carousel');
+  assert.equal(status.textContent, 'Studio · 1 / 3');
+  assert.equal(thumbRoot.querySelectorAll('button').length, 3);
+  assert.equal(root.getAttribute('aria-roledescription'), 'carousel');
 });
-check('next/previous wrap, update alt and active thumbnail without resetting size', () => {
-  sizes.querySelectorAll('button')[1].emit('click');
+check('next and previous reach all three images and wrap', () => {
   next.emit('click'); assert.equal(image.src, 'strata-shell-weather.webp');
   assert.equal(image.dataset.fit, 'cover'); assert.equal(image.alt, 'Worn in rain');
-  assert.equal(thumbRoot.querySelectorAll('button')[1].getAttribute('aria-pressed'), 'true');
-  assert.equal(add.disabled, false);
+  next.emit('click'); assert.equal(image.src, 'strata-shell-angle.webp');
+  assert.equal(thumbRoot.querySelectorAll('button')[2].getAttribute('aria-pressed'), 'true');
   next.emit('click'); assert.equal(image.src, 'strata-shell-base.webp');
-  previous.emit('click'); assert.equal(image.src, 'strata-shell-weather.webp');
+  previous.emit('click'); assert.equal(image.src, 'strata-shell-angle.webp');
 });
-check('thumbnail selection and keyboard navigation announce active view', () => {
+check('thumbnail selection and keyboard navigation announce the active view', () => {
   thumbRoot.querySelectorAll('button')[0].emit('click');
-  const event = gallery.emit('keydown', { key: 'ArrowRight' });
-  assert.equal(event.defaultPrevented, true); assert.equal(status.textContent, 'In the elements · 2 / 2');
-  gallery.emit('keydown', { key: 'ArrowLeft' }); assert.equal(image.src, 'strata-shell-base.webp');
-  assert.equal(gallery.emit('keydown', { key: 'Escape' }).defaultPrevented, undefined);
+  const event = root.emit('keydown', { key: 'ArrowRight' });
+  assert.equal(event.defaultPrevented, true); assert.equal(status.textContent, 'In the elements · 2 / 3');
+  root.emit('keydown', { key: 'ArrowLeft' }); assert.equal(image.src, 'strata-shell-base.webp');
+  assert.equal(root.emit('keydown', { key: 'Escape' }).defaultPrevented, undefined);
 });
 const pointer = (name, x, y, extra = {}) => viewport.emit(name, {
   isPrimary: true, button: 0, pointerId: 1, clientX: x, clientY: y, ...extra });
-check('horizontal swipe changes image; vertical scroll and small movement do not', () => {
+check('horizontal swipe changes the image; vertical scroll and small movement do not', () => {
   pointer('pointerdown', 200, 100); pointer('pointerup', 80, 110);
   assert.equal(image.src, 'strata-shell-weather.webp');
   pointer('pointerdown', 100, 100); pointer('pointerup', 180, 110);
@@ -150,66 +125,24 @@ check('horizontal swipe changes image; vertical scroll and small movement do not
   pointer('pointerdown', 100, 100); pointer('pointerup', 120, 100);
   assert.equal(image.src, 'strata-shell-base.webp');
 });
-check('cancelled pointers do not advance gallery', () => {
+check('cancelled pointers do not advance the gallery', () => {
   pointer('pointerdown', 200, 100); viewport.emit('pointercancel'); pointer('pointerup', 80, 100);
   assert.equal(image.src, 'strata-shell-base.webp');
 });
 check('image failure is recoverable by navigating to another view', () => {
   image.emit('error'); assert.equal(image.hidden, true);
-  assert.equal(gallery.querySelector('.product-gallery__error').hidden, false);
+  assert.equal(root.querySelector('.product-gallery__error').hidden, false);
   next.emit('click'); assert.equal(image.hidden, false);
-  assert.equal(gallery.querySelector('.product-gallery__error').hidden, true);
+  assert.equal(root.querySelector('.product-gallery__error').hidden, true);
 });
-check('gallery navigation preserves selected size and supports multi-quantity add', () => {
-  increaseQuantity.emit('click'); increaseQuantity.emit('click');
-  assert.equal(quantityValue.textContent, '3'); assert.equal(add.textContent, 'Add 3 to bag');
-  add.emit('click');
-  assert.deepEqual(added, [{ id: 'strata-shell', size: 'M', quantity: 3 }]);
-  assert.equal(callbacks[0].size, 'M'); assert.equal(callbacks[0].quantity, 3);
-  assert.equal(dialog.open, false);
-  assert.equal(document.activeElement, trigger);
+check('changing products resets the gallery to the first image', () => {
+  controller.setProduct(product('contour-merino'));
+  assert.equal(image.src, 'contour-merino-base.webp'); assert.equal(status.textContent, 'Studio · 1 / 3');
 });
-check('reopening and switching products reset studio view and size', () => {
-  controller.open(product('strata-shell'), trigger); next.emit('click'); controller.close();
-  controller.open(product('contour-merino'), trigger);
-  assert.equal(image.src, 'contour-merino-base.webp'); assert.equal(status.textContent, 'Studio · 1 / 2');
-  assert.equal(quantityValue.textContent, '1'); assert.equal(decreaseQuantity.disabled, true);
-  assert.equal(add.disabled, true); assert.equal(sizes.querySelectorAll('button')[0].getAttribute('aria-pressed'), 'false');
-});
-check('three-image navigation reaches the new angle, wraps and resets on reopening', () => {
-  const triple = product('traverse-short');
-  triple.images.push({ src: 'traverse-short-angle.webp', alt: 'Extreme bottom-up view', label: 'Off axis', fit: 'cover' });
-  controller.open(triple, trigger);
-  assert.equal(thumbRoot.querySelectorAll('button').length, 3);
-  assert.equal(status.textContent, 'Studio · 1 / 3');
-  next.emit('click'); next.emit('click');
-  assert.equal(image.src, 'traverse-short-angle.webp');
-  assert.equal(image.alt, 'Extreme bottom-up view');
-  assert.equal(status.textContent, 'Off axis · 3 / 3');
-  assert.equal(thumbRoot.querySelectorAll('button')[2].getAttribute('aria-pressed'), 'true');
-  next.emit('click'); assert.equal(image.src, 'traverse-short-base.webp');
-  previous.emit('click'); assert.equal(image.src, 'traverse-short-angle.webp');
-  thumbRoot.querySelectorAll('button')[1].emit('click');
-  gallery.emit('keydown', { key: 'ArrowRight' });
-  assert.equal(image.src, 'traverse-short-angle.webp');
-  pointer('pointerdown', 200, 100); pointer('pointerup', 80, 100);
-  assert.equal(image.src, 'traverse-short-base.webp');
-  sizes.querySelectorAll('button')[0].emit('click');
-  thumbRoot.querySelectorAll('button')[2].emit('click');
-  assert.equal(add.disabled, false);
-  controller.close(); controller.open(triple, trigger);
-  assert.equal(image.src, 'traverse-short-base.webp');
-  assert.equal(status.textContent, 'Studio · 1 / 3');
-  assert.equal(add.disabled, true);
-});
-check('single-image product hides extra controls and ignores arrows', () => {
+check('single-image products hide extra controls and ignore arrows', () => {
   const single = product('legacy'); delete single.images;
-  controller.open(single, trigger); assert.equal(next.hidden, true);
+  controller.setProduct(single); assert.equal(next.hidden, true);
   assert.equal(previous.hidden, true); assert.equal(thumbRoot.hidden, true);
-  gallery.emit('keydown', { key: 'ArrowRight' }); assert.equal(image.src, 'legacy-base.webp');
+  root.emit('keydown', { key: 'ArrowRight' }); assert.equal(image.src, 'legacy-base.webp');
 });
-check('close and no-root initialization remain safe', () => {
-  controller.close(); assert.equal(dialog.open, false);
-  api.initProductDialog().open(); api.initProductDialog().close();
-});
-console.log(`${checks} gallery/dialog regression checks passed`);
+console.log(`${checks} gallery regression checks passed`);

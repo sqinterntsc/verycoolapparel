@@ -1,6 +1,8 @@
+import { productUrl } from '../utils/product-url.js';
+
 const editorialImageIndexes = Object.freeze([2, 1, 2, 1]);
 
-function createFieldSystemCard(product, index, onSelect) {
+function createFieldSystemCard(product, index) {
   const view = product.images?.[editorialImageIndexes[index]] || product.images?.[1];
   if (!view) return null;
 
@@ -8,12 +10,10 @@ function createFieldSystemCard(product, index, onSelect) {
   article.className = 'field-system-card';
   article.dataset.productId = product.id;
 
-  const button = document.createElement('button');
-  button.type = 'button';
+  const button = document.createElement('a');
+  button.href = productUrl(product.id);
   button.className = 'field-system-card__button';
-  button.dataset.productOpen = product.id;
   button.setAttribute('aria-label', `Explore ${product.name}, ${product.categoryLabel}`);
-  button.addEventListener('click', () => onSelect(product, button));
 
   const image = document.createElement('img');
   image.className = 'field-system-card__image';
@@ -44,11 +44,11 @@ function createFieldSystemCard(product, index, onSelect) {
   return article;
 }
 
-export function renderFieldSystemCards(container, products, { onSelect = () => {} } = {}) {
+export function renderFieldSystemCards(container, products) {
   if (!container) return;
   const fragment = document.createDocumentFragment();
   products.forEach((product, index) => {
-    const card = createFieldSystemCard(product, index, onSelect);
+    const card = createFieldSystemCard(product, index);
     if (card) fragment.append(card);
   });
   container.replaceChildren(fragment);

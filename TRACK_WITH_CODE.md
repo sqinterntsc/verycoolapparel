@@ -6,8 +6,8 @@ Pixel ID: `1111051611838188`
 
 | Link | Event | Locations |
 | --- | --- | --- |
-| The field system | `CheckCurrentProducts` | Desktop and mobile navigation on both pages |
-| Our approach | `ViewBrandStory` | Desktop, mobile, and footer navigation on both pages |
+| The field system | `CheckCurrentProducts` | Desktop and mobile navigation on all pages |
+| Our approach | `ViewBrandStory` | Desktop, mobile, and footer navigation on all pages |
 | Reduce/remove product | `RemoveFromCart` | Bag quantity and remove controls for all products |
 
 ```html
@@ -27,13 +27,14 @@ fbq('trackCustom', 'ViewBrandStory', {
 
 ## Standard events
 
-See [Cart actions and event flow](docs/cart-event-flow.md) for an onboarding walkthrough of the button handlers, cart actions, Pixel calls and backend request. The product dialog quantity selector changes the intended addition; its **Add to bag** button commits it. The separate bag drawer quantity controls immediately change existing items.
+See [Cart actions and event flow](docs/cart-event-flow.md) for an onboarding walkthrough of the button handlers, cart actions, Pixel calls and backend request. The product page quantity selector changes the intended addition; its **Add to bag** button commits it. The separate bag drawer quantity controls immediately change existing items.
 
 Currently active:
 
 | Event | Scope |
 | --- | --- |
-| `PageView` | Both pages |
+| `PageView` | Every document |
+| `ViewContent` | One event per product-page load, including direct links and refreshes |
 | `AddToCart` | Add-to-bag and quantity increase controls for all products |
 | `InitiateCheckout` | Demo checkout button |
 
@@ -49,14 +50,14 @@ addProductToCart({
 });
 ```
 
-All product cart changes go through `assets/js/features/cart-actions.js`. The quick-shop modal uses
+All product cart changes go through `assets/js/features/cart-actions.js`. The product page uses
 `addProductToCart`; the bag quantity controls use `setProductQuantity`; and the bag remove control uses
 `removeProductFromCart`. These actions update cart state and call the existing trackers with the actual
 quantity changed, so capped or no-op changes are never over-reported.
 
 Successful quantity increases also use `fetch` to call `POST /api/prod/AddToCart` on the backend. Pixel `eventID` and the POST body's `event_id` share the value `addcart.<pixel_id>.<UUIDv4>`, generated using native `crypto.randomUUID()`. Each addition generates a fresh ID. The request includes the page URL, browser identifiers, actual added quantity and value. API success/error details are logged under `[Meta CAPI]`; reporting failures do not interrupt the bag. See the README for local and hosted endpoint URLs.
 
-Example commerce event for future implementation:
+Product-page view event (implemented in `assets/js/utils/meta-events.js`):
 
 ```js
 fbq('track', 'ViewContent', {

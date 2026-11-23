@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "generate:products": "node scripts/generate-products.mjs",
+    "test": "node --test tests/*.test.mjs tests/*.test.cjs"
   }
 }

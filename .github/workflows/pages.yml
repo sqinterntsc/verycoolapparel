@@ -26,10 +26,12 @@ jobs:
         with:
           node-version: '22'
       - uses: actions/configure-pages@v5
+        id: pages
       - name: Build public environment config and site
         run: npm run build
         env:
           BACKEND_URL: ${{ vars.BACKEND_URL }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

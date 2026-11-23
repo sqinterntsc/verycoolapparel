@@ -1,6 +1,6 @@
 # Verycoolapparel
 
-A premium outdoor apparel storefront built with **vanilla HTML, CSS, and JavaScript**. A small build script generates public environment configuration; no framework or dependencies. Cart event reporting connects to the separate Verycoolapparel backend.
+A premium outdoor apparel storefront built with **vanilla HTML, CSS, and JavaScript**. Small build scripts generate static product pages and public environment configuration; no framework or dependencies. Cart event reporting connects to the separate Verycoolapparel backend.
 
 ## Run locally
 
@@ -17,7 +17,7 @@ Use a local HTTP server instead of double-clicking the HTML files: browsers rest
 
 ### AddToCart API
 
-For the button-by-button call paths, read [Cart actions and event flow](docs/cart-event-flow.md). The product dialog's quantity selector changes the intended addition; **Add to bag** commits it. The bag drawer's quantity buttons immediately update existing cart items.
+For the button-by-button call paths, read [Cart actions and event flow](docs/cart-event-flow.md). The product page's quantity selector changes the intended addition; **Add to bag** commits it. The bag drawer's quantity buttons immediately update existing cart items.
 
 Start the backend separately with `pnpm dev` in `../verycoolapparel-backend`. Cart events call `${BACKEND_URL}/api/prod/AddToCart`. Match the local backend's `PORT` to the port in `BACKEND_URL`. Set the backend's `FRONTEND_ORIGINS` to allow the storefront origin (including the local frontend `PORT`). The backend must have the new route, CORS configuration and Meta credentials deployed for the hosted integration to work.
 
@@ -44,13 +44,16 @@ The fetch call runs asynchronously. The cart remains usable if reporting fails; 
 ```text
 index.html                       Landing page and main entry point
 products/index.html              Collection, filters, search, and sorting
+products/<product-id>/index.html Generated standalone product pages (four products)
+scripts/templates/product.html  Shared product-page HTML template
+scripts/product-pages.mjs        Generates HTML from centralized product data
 assets/
   css/
     main.css                     CSS entry point
     tokens.css                   Colors, typography, spacing
     base.css                     Reset, accessibility, shared primitives
     layout.css                   Navigation and footer
-    components.css               Cards, buttons, product dialog, bag drawer
+    components.css               Cards, gallery, purchase controls, bag drawer
     pages.css                    Landing and collection page layouts
   images/                        Preserved illustration assets
     photorealistic/
@@ -65,7 +68,9 @@ assets/
     features/cart-actions.js     Cart actions, Pixel tracking and AddToCart fetch
     utils/meta-events.js         Pixel payloads and native UUIDv4 event IDs
     features/cart-ui.js          Bag drawer and quantity controls
-    features/product-dialog.js  Product details and size selection
+    features/product-gallery.js  Shared three-image gallery controller
+    pages/product.js             Product-page sizes, quantities and ViewContent
+    utils/product-url.js         Product links that respect repository base paths
     pages/catalog.js             Category filtering, search, sorting
     utils/currency.js            USD formatting
 docs/assets/                     Image provenance and editable product sources
@@ -73,7 +78,21 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Make changes
 
-- **Head snippets:** edit the clearly marked `<head>` in `index.html`. Add any shared snippets to `products/index.html` too. The HTML is delivered directly to the browser.
+### Product data and generated pages
+
+See [HOW-TO-GENERATE.md](HOW-TO-GENERATE.md) for the editing commands, file organization, generation code flow, browser tracking flow and an explanation of `.mjs`.
+
+`assets/js/data/products.js` is the single product-data source. It exports one array of JavaScript objects with IDs, names, descriptions, prices, categories, colors, sizes, specifications and images. `productById` is a Map for looking up an object by ID. The homepage, collection, bag, product-page controller and static generator all use this same data. There are no per-page product JSON copies. The collection currently contains only Traverse Short, Contour Merino LS, Altitude Grid Fleece and Strata 3L Shell; gaiter, shoe and gilet image assets are not used or modified.
+
+`scripts/templates/product.html` contains the shared page structure, navigation, footer and Pixel initialization. `scripts/product-pages.mjs` loops over the product array, substitutes escaped values into the template, and uses `.map()` to render specifications and size buttons. It writes `products/<product-id>/index.html`, including each product's content, title, description and social metadata in the actual HTML. Browsers and crawlers can read the content without JavaScript. `assets/js/pages/product.js` adds gallery navigation, size selection, quantity controls and cart actions to the already-rendered page.
+
+After editing product data or the template, run `npm run generate:products` to refresh the four checked-in HTML files. `npm run dev` also regenerates them when it starts. `npm run build` regenerates product pages inside `_site/`, so deployments always use current data. Do not edit generated product HTML directly; regeneration overwrites it. The generator writes only implemented product pages and does not delete unrelated directories.
+
+GitHub Actions passes the GitHub Pages `base_url` as `SITE_URL` to generate absolute canonical and social-image URLs, including the repository prefix. For manual production builds or a custom domain, set `SITE_URL` to the storefront base URL. Local generation without it uses relative metadata URLs. Backend secrets stay on the backend.
+
+Every product document sends one `PageView` from its HTML and one `ViewContent` from its page controller with product ID, name, category, price and currency. Gallery, size and quantity changes do not send extra view events. Add-to-bag continues to send the existing deduplicated Pixel/CAPI AddToCart event; its `event_source_url` is the product page's actual browser URL. The bag drawer remains available on all pages.
+
+- **Head snippets:** edit `index.html`, `products/index.html`, and `scripts/templates/product.html` for shared changes; regenerate product pages afterward. The HTML is delivered directly to the browser.
 - **Products:** edit `assets/js/data/products.js`. Add product images to `assets/images/`. Product names, descriptions, prices, sizes, and specifications are centralized.
 - **Visual style:** edit `assets/css/tokens.css` for the palette and spacing. Component styles and page layouts have separate files.
 - **New pages:** create a folder with an `index.html` and use the existing relative CSS/module paths. Shared header/footer HTML is intentionally explicit in each page.
@@ -81,11 +100,11 @@ docs/assets/                     Image provenance and editable product sources
 
 ## Shopping behavior
 
-- Open a product to view its details and choose a size before adding it to your bag. Each product modal has a three-image gallery: a floating product image, an on-body rain/snow close-up, and an extreme-angle view. Navigate with the overlaid arrows and dots, left/right keys while focused inside the gallery, or a horizontal swipe. Reopening resets to the first image; switching views preserves the selected size.
+- Open a product to view its details and choose a size before adding it to your bag. Each standalone product page has a three-image gallery: a floating product image, an on-body rain/snow close-up, and an extreme-angle view. Navigate with the overlaid arrows and dots, left/right keys while focused inside the gallery, or a horizontal swipe. Loading a page starts with the first image; switching views preserves the selected size.
 - Each product/size combination is a separate bag item. Increase or decrease quantities and remove items.
 - The header count and subtotal update immediately. Bags persist in `localStorage` and synchronize across tabs on the same origin. Storage restrictions fall back to an in-memory bag.
 - The collection supports category filters, category links, text search, and price sorting.
-- Native `<dialog>` elements support modal focus, Escape to close, and focus return. Mobile navigation and reduced-motion preferences are supported.
+- The bag uses a native `<dialog>` with modal focus, Escape to close, and focus return. Mobile navigation and reduced-motion preferences are supported.
 
 ## Assets and concept limitations
 
@@ -97,11 +116,11 @@ For production, replace concept specifications with verified product information
 
 ## Verification
 
-The product galleries have 13 dependency-free DOM-event regression checks in `tests/product-gallery.test.cjs` covering arrows, wraparound, thumbnails, keyboard navigation, swipe direction/cancellation, recoverable image errors, modal reset, single-image fallback, selected-size preservation, add-to-bag callbacks and focus return. Run with Node: `node tests/product-gallery.test.cjs`. These are controller checks with a DOM double, not interactive browser layout verification. Four weather images and four extreme-angle images decode correctly at 1408 × 1760; each gallery's three actual file paths were verified.
+The product galleries have 10 dependency-free DOM-event regression checks in `tests/product-gallery.test.cjs` covering arrows, wraparound, thumbnails, keyboard navigation, swipe direction/cancellation, recoverable image errors, product changes and single-image fallback. `tests/product-pages.test.mjs` checks static product content, repository-prefixed metadata, preservation of unrelated directories and ViewContent payloads. `npm test` runs all gallery, page and cart checks. Run with Node: `node tests/product-gallery.test.cjs`. These are controller checks with a DOM double, not interactive browser layout verification. Four weather images and four extreme-angle images decode correctly at 1408 × 1760; each gallery's three actual file paths were verified.
 
 Cart and catalog logic were exercised in macOS JavaScriptCore: separate size variants, quantity changes, removal, subtotals, duplicate cart records, malformed storage, unavailable storage, category filtering, case-insensitive search, and both price sort directions passed. JavaScript bodies were checked for syntax, and static HTTP checks verified page links, module imports, stylesheet imports, and JavaScript MIME types.
 
-Interactive browser verification could not run in this environment: macOS denied Chrome's process launch, and the remote browser launcher was unavailable. Desktop and mobile browser interaction should be checked when opening the local site.
+Integrated browser verification passed for all four product routes on desktop and mobile, all three gallery images per product, direct links and refreshes, Back/Forward navigation, catalog filtering, repository-prefixed URLs, cart persistence, multi-quantity additions, quantity caps and synchronization after bag removal. PageView and ViewContent each fired once per load, and AddToCart carried the actual product URL. Pixel/CAPI were intercepted so no live Meta events were sent. This checks the browser calls and payloads; Meta receipt was not tested.
 
 
 Cart/API checks: `node --test tests/cart-api.test.mjs`, `node tests/cart-actions.test.mjs`, and `node tests/meta-events.test.mjs`. Transport is mocked, so these checks do not submit live Meta events.

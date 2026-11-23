@@ -45,7 +45,7 @@ function updateCategoryUrl(category) {
   history.replaceState(null, '', url);
 }
 
-export function initCatalog({ onSelect = () => {} } = {}) {
+export function initCatalog() {
   const grids = [...document.querySelectorAll('[data-catalog-grid]')];
   if (!grids.length) return null;
 
@@ -62,7 +62,7 @@ export function initCatalog({ onSelect = () => {} } = {}) {
 
   function render({ updateUrl = false } = {}) {
     const result = filterAndSortProducts(products, state);
-    grids.forEach((grid) => renderProductCards(grid, result, { onSelect }));
+    grids.forEach((grid) => renderProductCards(grid, result));
 
     filters.forEach((filter) => {
       const active = filter.dataset.filter === state.category;

@@ -2,7 +2,7 @@ import { products } from './data/products.js';
 import { renderProductCards } from './components/product-card.js';
 import { renderFieldSystemCards } from './components/field-system-card.js';
 import { initCartUI } from './features/cart-ui.js';
-import { initProductDialog } from './features/product-dialog.js';
+import { initProductPage } from './pages/product.js';
 import { initCatalog } from './pages/catalog.js';
 import { createDisclosure } from './utils/motion.js';
 import { initStickyHeader } from './features/sticky-header.js';
@@ -75,22 +75,19 @@ function init() {
   initStickyHeader();
   const dialogRoot = getDialogRoot();
   const showToast = initToast();
-  const productDialog = initProductDialog({
-    root: dialogRoot,
+  initProductPage({
     onAdded: ({ product, size, quantity }) => {
       const quantityLabel = quantity > 1 ? `${quantity} × ` : '';
       showToast(`${quantityLabel}${product.name}, size ${size}, added to your bag.`);
     },
   });
-  const openProduct = (product, trigger) => productDialog.open(product, trigger);
-
   document.querySelectorAll('[data-product-grid]').forEach((grid) => {
-    renderProductCards(grid, products, { onSelect: openProduct });
+    renderProductCards(grid, products);
   });
   document.querySelectorAll('[data-field-system-grid]').forEach((grid) => {
-    renderFieldSystemCards(grid, products, { onSelect: openProduct });
+    renderFieldSystemCards(grid, products);
   });
-  initCatalog({ onSelect: openProduct });
+  initCatalog();
   initCartUI({ root: dialogRoot });
   initMobileMenu();
 }
