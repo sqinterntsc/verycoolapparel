@@ -214,6 +214,14 @@ heading, description or price at runtime.
 
 ## Browser and tracking code flow
 
+The product layout in `assets/css/product.css` reserves space for the header and
+breadcrumb within `100svh`, with a `100vh` fallback. `svh` uses the smaller,
+stable viewport when mobile browser controls are visible; `dvh` changes as
+those controls expand or retract. The gallery shrinks with available height,
+and description/specifications sit in a native expandable `<details>` after
+the size, quantity and Add to bag controls. Expanding product information can
+extend the page, but does not move the purchase controls below that section.
+
 1. Homepage and collection cards use `utils/product-url.js` to create ordinary
    product links. Resolving URLs from the module preserves the deployment's
    repository prefix.

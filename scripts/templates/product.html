@@ -38,7 +38,7 @@
   <noscript><img height="1" width="1" style="display:none" alt=""
     src="https://www.facebook.com/tr?id=1111051611838188&ev=PageView&noscript=1"></noscript>
 </head>
-<body>
+<body class="product-body">
   <a class="skip-link" href="#main-content">Skip to content</a>
   <div class="announcement"><span>LESS NOISE. MORE OUTSIDE.</span><span class="announcement-right">FIELD SYSTEM / COLLECTION 01</span></div>
   <header class="site-header">
@@ -71,13 +71,10 @@
         <p class="product-dialog__eyebrow">{{categoryLabel}} · {{color}}</p>
         <h1 class="product-dialog__title" id="product-title">{{name}}</h1>
         <p class="product-dialog__price">{{formattedPrice}} <span class="eyebrow">USD</span></p>
-        <p class="product-dialog__description">{{description}}</p>
-        <dl class="product-dialog__specs">{{specs}}</dl>
         <fieldset class="product-dialog__size-fieldset">
           <legend>Choose a size</legend>
           <div class="product-dialog__sizes">{{sizes}}</div>
         </fieldset>
-        <p class="product-dialog__validation" data-product-validation role="alert" hidden>Please choose a size.</p>
         <div class="product-dialog__purchase">
           <div class="product-dialog__quantity">
             <span class="product-dialog__quantity-label" id="product-quantity-label">Quantity</span>
@@ -89,6 +86,12 @@
           </div>
           <button class="product-dialog__add" type="button" data-product-add disabled>Add to bag</button>
         </div>
+        <p class="product-dialog__validation" data-product-validation role="alert" hidden>Please choose a size.</p>
+        <details class="product-page__information">
+          <summary>Description &amp; specifications</summary>
+          <p class="product-dialog__description">{{description}}</p>
+          <dl class="product-dialog__specs">{{specs}}</dl>
+        </details>
         <noscript><p class="product-dialog__description">Enable JavaScript to choose a size and add this product to your bag.</p></noscript>
         <a class="product-page__continue" href="../">Explore all four essentials ↗</a>
       </div>
